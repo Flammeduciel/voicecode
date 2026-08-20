@@ -6,7 +6,7 @@
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![VS Code](https://img.shields.io/badge/VS%20Code-1.95+-007ACC.svg)](https://code.visualstudio.com/)
-[![Tests](https://img.shields.io/badge/tests-37%20passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-49%20passing-brightgreen)]()
 [![Platform](https://img.shields.io/badge/platform-Windows-blue)]()
 
 </div>
@@ -220,6 +220,31 @@ npm run build
 | `"signet suivant"` | `"next bookmark"` | Next bookmark |
 | `"signet précédent"` | `"previous bookmark"` | Previous bookmark |
 
+### Dictation Mode
+
+Say **"dicte"** / **"dictate"** to enter dictation mode. Everything you say is inserted as text in the editor. Say **"arrete la dictee"** / **"stop dictation"** to exit.
+
+| Say | Get |
+|-----|-----|
+| `"dicte"` / `"dictate"` | Enter dictation mode |
+| `"arrete la dictee"` / `"stop dictation"` | Exit dictation mode |
+| `"console.log parenthese ouvrante hello parenthese fermante"` | `console.log(hello)` |
+| `"let x equals semicolon"` | `let x equals;` |
+
+Punctuation words are automatically converted to characters:
+
+| Say | Get |
+|-----|-----|
+| `"point"` / `"period"` | `.` |
+| `"virgule"` / `"comma"` | `,` |
+| `"point virgule"` / `"semicolon"` | `;` |
+| `"deux points"` / `"colon"` | `:` |
+| `"parenthese ouvrante"` / `"open paren"` | `(` |
+| `"parenthese fermante"` / `"close paren"` | `)` |
+| `"accolade ouvrante"` / `"open brace"` | `{` |
+| `"accolade fermante"` / `"close brace"` | `}` |
+| `"nouvelle ligne"` / `"new line"` | newline |
+
 ### Fuzzy Matching
 
 VoiceCode handles **plural forms** and **close variations**:
@@ -272,7 +297,7 @@ voicecode/
 │   │   ├── patterns.ts        # 80+ regex patterns (FR/EN)
 │   │   ├── fast-path.ts       # Levenshtein fuzzy matching (120+ commands)
 │   │   ├── intents.ts         # Intent definitions (80+ intents)
-│   │   ├── entities.ts        # Entity extraction (numbers, files)
+│   │   ├── entities.ts        # Entity extraction + dictation text processing
 │   │   └── numbers.ts         # "quinze" → 15 (FR/EN)
 │   │
 │   ├── editor/
@@ -282,7 +307,7 @@ voicecode/
 │   └── ui/
 │       └── status-bar.ts      # Recording state indicator
 │
-├── test/                      # 37 unit tests
+├── test/                      # 49 unit tests
 └── dist/                      # Built extension
 ```
 
@@ -371,6 +396,7 @@ npm run watch
 - [x] Bookmark management
 - [x] Multi-cursor support
 - [x] Code folding
+- [x] Dictation mode (type code by voice)
 - [ ] Voice Activity Detection (auto-start/stop)
 - [ ] Custom command definitions
 - [ ] Multi-monitor support
