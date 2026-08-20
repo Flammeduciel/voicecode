@@ -29,6 +29,8 @@ export function createEngine(deps: EngineDeps): Engine {
   const editorActions = createEditorActions();
   let audioCapture: AudioCapture | null = null;
   let onResultCallback: ((result: any) => void) | null = null;
+  let waveHistory: number[] = new Array(32).fill(0);
+  let waveIndex = 0;
 
   function updateUI(text?: string) {
     deps.statusBar.update(state.getState(), text);
@@ -101,6 +103,18 @@ export function createEngine(deps: EngineDeps): Engine {
       if (state.isRecording()) {
         const processed = audioProcessor.processChunk(samples, sampleRate);
         sttManager.feedAudio(processed, 16000);
+
+        let sum = 0;
+        for (let i = 0; i < processed.length; i++) {
+          sum += processed[i] * processed[i];
+        }
+        const rms = Math.sqrt(sum / processed.length);
+        const level = Math.min(1, rms * 5);
+
+        waveHistory[waveIndex % 32] = level;
+        waveIndex++;
+
+        deps.webview.sendAudioLevel(level, [...waveHistory]);
       }
     });
 

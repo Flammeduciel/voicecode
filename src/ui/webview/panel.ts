@@ -10,6 +10,7 @@ export interface WebviewPanel {
   sendAction(intent: string, success: boolean): void;
   sendStatus(status: string): void;
   sendLanguage(lang: PanelLanguage): void;
+  sendAudioLevel(level: number, waveform: number[]): void;
   onLanguageChange(listener: (lang: PanelLanguage) => void): void;
   dispose(): void;
 }
@@ -85,6 +86,40 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
       margin-bottom: 6px;
       letter-spacing: 0.5px;
     }
+    .waveform-container {
+      background: var(--vscode-input-background);
+      border: 1px solid var(--vscode-input-border);
+      border-radius: 4px;
+      padding: 4px 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 36px;
+    }
+    .waveform-bars {
+      display: flex;
+      align-items: center;
+      gap: 1px;
+      flex: 1;
+      height: 24px;
+    }
+    .waveform-bar {
+      width: 2px;
+      min-height: 2px;
+      background: var(--vscode-descriptionForeground);
+      border-radius: 1px;
+      transition: height 0.08s ease;
+    }
+    .waveform-bar.active {
+      background: #c0392b;
+    }
+    .waveform-level {
+      font-size: 10px;
+      color: var(--vscode-descriptionForeground);
+      min-width: 32px;
+      text-align: right;
+      font-family: var(--vscode-editor-font-family);
+    }
     .transcript-box {
       background: var(--vscode-input-background);
       border: 1px solid var(--vscode-input-border);
@@ -135,6 +170,14 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
   </div>
 
   <div class="section">
+    <div class="section-title">Audio</div>
+    <div class="waveform-container">
+      <div id="waveform" class="waveform-bars"></div>
+      <span id="level" class="waveform-level">0%</span>
+    </div>
+  </div>
+
+  <div class="section">
     <div class="section-title">Transcription</div>
     <div id="transcript" class="transcript-box">
       <div class="empty-state">Press Ctrl+Shift+V to start</div>
@@ -150,8 +193,18 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
     const transcript = document.getElementById('transcript');
     const actions = document.getElementById('actions');
     const status = document.getElementById('status');
+    const waveformEl = document.getElementById('waveform');
+    const levelEl = document.getElementById('level');
     let hasContent = false;
     const vscode = acquireVsCodeApi();
+
+    const NUM_BARS = 32;
+    for (let i = 0; i < NUM_BARS; i++) {
+      const bar = document.createElement('div');
+      bar.className = 'waveform-bar';
+      bar.style.height = '2px';
+      waveformEl.appendChild(bar);
+    }
 
     function switchLang(lang) {
       document.getElementById('lang-en').className = 'lang-btn' + (lang === 'en' ? ' active' : '');
@@ -163,6 +216,18 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
       const msg = event.data;
 
       switch (msg.type) {
+        case 'audio':
+          const bars = waveformEl.children;
+          const wf = msg.waveform || [];
+          for (let i = 0; i < NUM_BARS; i++) {
+            const val = i < wf.length ? wf[i] : 0;
+            const h = Math.max(2, Math.round(val * 22));
+            bars[i].style.height = h + 'px';
+            bars[i].className = 'waveform-bar' + (val > 0.05 ? ' active' : '');
+          }
+          levelEl.textContent = Math.round(msg.level * 100) + '%';
+          break;
+
         case 'transcript':
           if (!hasContent) {
             transcript.innerHTML = '';
@@ -196,6 +261,14 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
         case 'status':
           status.textContent = msg.status.toUpperCase();
           status.className = 'status-badge status-' + msg.status;
+          if (msg.status === 'idle') {
+            const bars2 = waveformEl.children;
+            for (let i = 0; i < NUM_BARS; i++) {
+              bars2[i].style.height = '2px';
+              bars2[i].className = 'waveform-bar';
+            }
+            levelEl.textContent = '0%';
+          }
           break;
 
         case 'language':
@@ -263,6 +336,10 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
 
     sendLanguage(lang: PanelLanguage) {
       panel?.webview.postMessage({ type: "language", lang });
+    },
+
+    sendAudioLevel(level: number, waveform: number[]) {
+      panel?.webview.postMessage({ type: "audio", level, waveform });
     },
 
     onLanguageChange(listener: (lang: PanelLanguage) => void) {
