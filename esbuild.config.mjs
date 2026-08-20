@@ -10,10 +10,6 @@ const buildOptions = {
   outfile: "dist/extension.js",
   external: [
     "vscode",
-    "sherpa-onnx-node",
-    "sherpa-onnx-win-x64",
-    "node-cpal",
-    "*.node",
   ],
   format: "cjs",
   platform: "node",

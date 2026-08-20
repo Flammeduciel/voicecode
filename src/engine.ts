@@ -1,7 +1,5 @@
 import * as vscode from "vscode";
 import { AppState, StateMachine } from "./state-machine";
-import { AudioCapture, createAudioCapture } from "./audio/capture";
-import { AudioProcessor, createAudioProcessor } from "./audio/processor";
 import { NLUOrchestrator, createNLUOrchestrator } from "./nlu/orchestrator";
 import { EditorActions, createEditorActions } from "./editor/actions";
 import { StatusBar } from "./ui/status-bar";
@@ -23,11 +21,9 @@ export interface EngineDeps {
 
 export function createEngine(deps: EngineDeps): Engine {
   const state = new StateMachine();
-  const audioProcessor = createAudioProcessor();
   const nlu = createNLUOrchestrator();
   const editorActions = createEditorActions();
   const speechServer = createSpeechServer();
-  let audioCapture: AudioCapture | null = null;
 
   function updateUI() {
     deps.statusBar.update(state.getState());
@@ -84,22 +80,11 @@ export function createEngine(deps: EngineDeps): Engine {
     log(`Opening Chrome speech page: ${chromeUrl}`);
     vscode.env.openExternal(vscode.Uri.parse(chromeUrl));
 
-    audioCapture = createAudioCapture({ device: "default", sampleRate: 16000 });
-
-    await audioCapture.start((samples, sampleRate) => {
-      if (state.isRecording()) {
-        audioProcessor.processChunk(samples, sampleRate);
-      }
-    });
-
     log("Recording started");
   }
 
   async function stopRecording() {
     if (!state.isRecording() && !state.isProcessing()) return;
-
-    await audioCapture?.stop();
-    audioCapture = null;
 
     state.transition(AppState.Idle);
     log("Recording stopped");
