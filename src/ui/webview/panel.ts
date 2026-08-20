@@ -9,6 +9,7 @@ export interface WebviewPanel {
   sendLanguage(lang: PanelLanguage): void;
   sendStartListening(): void;
   sendStopListening(): void;
+  sendStatus(status: string): void;
   onTranscript(listener: (text: string, isFinal: boolean) => void): void;
   onLanguageChange(listener: (lang: PanelLanguage) => void): void;
   sendAction(intent: string, success: boolean): void;
@@ -361,6 +362,9 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
             '<span class="action-time">' + new Date().toLocaleTimeString() + '</span>';
           actionsEl.insertBefore(actionDiv, actionsEl.firstChild);
           break;
+        case 'status':
+          setStatus(msg.status);
+          break;
       }
     });
   </script>
@@ -423,6 +427,10 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
 
     sendStopListening() {
       panel?.webview.postMessage({ type: "stopListening" });
+    },
+
+    sendStatus(status: string) {
+      panel?.webview.postMessage({ type: "status", status });
     },
 
     onTranscript(listener: (text: string, isFinal: boolean) => void) {
