@@ -27,7 +27,9 @@ export function createAudioCapture(options: AudioCaptureOptions = {}): AudioCapt
       try {
         const cpal = require("node-cpal");
         const devices = cpal.getDevices();
-        const inputDevices = devices.filter((d: any) => d.isInput);
+        const inputDevices = devices.filter(
+          (d: any) => d.isInput || d.isDefaultInput
+        );
 
         if (inputDevices.length === 0) {
           throw new Error("No input audio devices found");
