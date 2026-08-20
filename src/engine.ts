@@ -1,7 +1,7 @@
 import { AppState, StateMachine } from "./state-machine";
 import { AudioCapture, createAudioCapture } from "./audio/capture";
 import { AudioProcessor, createAudioProcessor } from "./audio/processor";
-import { STTManager, createSTTManager } from "./stt/manager";
+import { STTManager, createSTTManager, STTLanguage } from "./stt/manager";
 import { NLUOrchestrator, createNLUOrchestrator } from "./nlu/orchestrator";
 import { EditorActions, createEditorActions } from "./editor/actions";
 import { StatusBar } from "./ui/status-bar";
@@ -28,6 +28,7 @@ export function createEngine(deps: EngineDeps): Engine {
   const nlu = createNLUOrchestrator();
   const editorActions = createEditorActions();
   let audioCapture: AudioCapture | null = null;
+  let onResultCallback: ((result: any) => void) | null = null;
 
   function updateUI(text?: string) {
     deps.statusBar.update(state.getState(), text);
@@ -35,6 +36,22 @@ export function createEngine(deps: EngineDeps): Engine {
   }
 
   state.onStateChange(() => updateUI());
+
+  deps.webview.onLanguageChange(async (lang) => {
+    log(`Language switch requested: ${lang}`);
+    const wasRecording = state.isRecording();
+
+    if (wasRecording) {
+      await stopRecording();
+    }
+
+    await sttManager.switchLanguage(lang as STTLanguage);
+    deps.webview.sendLanguage(lang);
+
+    if (wasRecording) {
+      await startRecording();
+    }
+  });
 
   async function startRecording() {
     if (!state.transition(AppState.Recording)) {
@@ -44,7 +61,7 @@ export function createEngine(deps: EngineDeps): Engine {
 
     const config = getConfig();
 
-    await sttManager.start(async (result) => {
+    onResultCallback = async (result: any) => {
       if (result.isFinal) {
         deps.webview.sendTranscript(result.text, true);
         state.transition(AppState.Processing);
@@ -71,7 +88,9 @@ export function createEngine(deps: EngineDeps): Engine {
         deps.webview.sendTranscript(result.text, false);
         updateUI(result.text);
       }
-    });
+    };
+
+    await sttManager.start(onResultCallback);
 
     audioCapture = createAudioCapture({
       device: config.microphone,
@@ -86,7 +105,8 @@ export function createEngine(deps: EngineDeps): Engine {
     });
 
     deps.webview.show();
-    log("Recording started");
+    deps.webview.sendLanguage(sttManager.getLanguage());
+    log(`Recording started (language: ${sttManager.getLanguage()})`);
   }
 
   async function stopRecording() {

@@ -1,5 +1,7 @@
 import * as vscode from "vscode";
 
+export type PanelLanguage = "en" | "fr";
+
 export interface WebviewPanel {
   show(): void;
   hide(): void;
@@ -7,11 +9,14 @@ export interface WebviewPanel {
   sendTranscript(text: string, isFinal: boolean): void;
   sendAction(intent: string, success: boolean): void;
   sendStatus(status: string): void;
+  sendLanguage(lang: PanelLanguage): void;
+  onLanguageChange(listener: (lang: PanelLanguage) => void): void;
   dispose(): void;
 }
 
 export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
   let panel: vscode.WebviewPanel | undefined;
+  let langListeners: ((lang: PanelLanguage) => void)[] = [];
 
   function getHtml(): string {
     return /*html*/ `<!DOCTYPE html>
@@ -37,7 +42,7 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
       padding-bottom: 8px;
       border-bottom: 1px solid var(--vscode-widget-border);
     }
-    .header h2 { font-size: 14px; font-weight: 600; }
+    .header h2 { font-size: 14px; font-weight: 600; flex: 1; }
     .status-badge {
       padding: 2px 8px;
       border-radius: 10px;
@@ -47,6 +52,31 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
     .status-idle { background: #333; color: #aaa; }
     .status-recording { background: #c0392b; color: #fff; }
     .status-processing { background: #2980b9; color: #fff; }
+    .lang-switcher {
+      display: flex;
+      gap: 0;
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid var(--vscode-input-border);
+    }
+    .lang-btn {
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      background: var(--vscode-input-background);
+      color: var(--vscode-descriptionForeground);
+      transition: all 0.15s;
+    }
+    .lang-btn.active {
+      background: var(--vscode-button-background);
+      color: var(--vscode-button-foreground);
+    }
+    .lang-btn:hover:not(.active) {
+      background: var(--vscode-input-background);
+      opacity: 0.8;
+    }
     .section { margin-bottom: 16px; }
     .section-title {
       font-size: 11px;
@@ -97,6 +127,10 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
 <body>
   <div class="header">
     <h2>VoiceCode</h2>
+    <div class="lang-switcher">
+      <button class="lang-btn active" id="lang-en" onclick="switchLang('en')">EN</button>
+      <button class="lang-btn" id="lang-fr" onclick="switchLang('fr')">FR</button>
+    </div>
     <span id="status" class="status-badge status-idle">IDLE</span>
   </div>
 
@@ -117,6 +151,12 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
     const actions = document.getElementById('actions');
     const status = document.getElementById('status');
     let hasContent = false;
+
+    function switchLang(lang) {
+      document.getElementById('lang-en').className = 'lang-btn' + (lang === 'en' ? ' active' : '');
+      document.getElementById('lang-fr').className = 'lang-btn' + (lang === 'fr' ? ' active' : '');
+      vscode.postMessage({ type: 'switchLanguage', lang: lang });
+    }
 
     window.addEventListener('message', (event) => {
       const msg = event.data;
@@ -156,6 +196,11 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
           status.textContent = msg.status.toUpperCase();
           status.className = 'status-badge status-' + msg.status;
           break;
+
+        case 'language':
+          document.getElementById('lang-en').className = 'lang-btn' + (msg.lang === 'en' ? ' active' : '');
+          document.getElementById('lang-fr').className = 'lang-btn' + (msg.lang === 'fr' ? ' active' : '');
+          break;
       }
     });
   </script>
@@ -176,6 +221,15 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
         { enableScripts: true, retainContextWhenHidden: true }
       );
       panel.webview.html = getHtml();
+
+      panel.webview.onDidReceiveMessage((msg) => {
+        if (msg.type === "switchLanguage") {
+          for (const listener of langListeners) {
+            listener(msg.lang as PanelLanguage);
+          }
+        }
+      });
+
       panel.onDidDispose(() => {
         panel = undefined;
       });
@@ -204,6 +258,14 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
 
     sendStatus(status: string) {
       panel?.webview.postMessage({ type: "status", status });
+    },
+
+    sendLanguage(lang: PanelLanguage) {
+      panel?.webview.postMessage({ type: "language", lang });
+    },
+
+    onLanguageChange(listener: (lang: PanelLanguage) => void) {
+      langListeners.push(listener);
     },
 
     dispose() {
