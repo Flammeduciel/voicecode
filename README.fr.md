@@ -32,6 +32,22 @@ La reconnaissance vocale fonctionne dans **Chrome** via l'API Web Speech, offran
 
 ---
 
+## Captures d'ecran
+
+### 1. Chrome demande l'autorisation du microphone
+
+![Autorisation microphone](docs/images/01-microphone-permission.png)
+
+### 2. Mode dictee — dicter du code
+
+![Mode dictee](docs/images/02-dictation-mode.png)
+
+### 3. Le code apparait dans VS Code
+
+![Code dans l'editeur](docs/images/03-code-in-editor.png)
+
+---
+
 ## Comment ca marche
 
 ```

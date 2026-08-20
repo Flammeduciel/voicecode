@@ -31,6 +31,22 @@ Speech recognition runs in **Chrome** via the Web Speech API, giving you Google-
 
 ---
 
+## Screenshots
+
+### 1. Chrome asks for microphone permission
+
+![Microphone permission](docs/images/01-microphone-permission.png)
+
+### 2. Dictation mode — speaking code
+
+![Dictation mode](docs/images/02-dictation-mode.png)
+
+### 3. Code appears in VS Code
+
+![Code in editor](docs/images/03-code-in-editor.png)
+
+---
+
 ## How it Works
 
 ```
