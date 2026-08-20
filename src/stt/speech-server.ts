@@ -38,14 +38,14 @@ function getPageHtml(wsPort: number, lang: string): string {
     .app {
       max-width: 1100px;
       margin: 0 auto;
-      padding: 20px;
+      padding: 0 20px;
       display: grid;
       grid-template-columns: 1fr 340px;
-      gap: 16px;
+      grid-template-rows: auto 1fr;
       height: 100vh;
     }
-    .main { display: flex; flex-direction: column; gap: 16px; }
-    .sidebar { display: flex; flex-direction: column; gap: 16px; }
+    .main { display: flex; flex-direction: column; gap: 16px; overflow-y: auto; padding: 16px 0; }
+    .sidebar { display: flex; flex-direction: column; gap: 16px; overflow-y: auto; padding: 16px 0 16px 16px; }
     h1 { font-size: 20px; font-weight: 700; color: #e94560; }
     .subtitle { font-size: 11px; color: #666; margin-top: 2px; }
 
@@ -54,8 +54,12 @@ function getPageHtml(wsPort: number, lang: string): string {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding-bottom: 12px;
+      padding: 16px 0;
       border-bottom: 1px solid #1e1e30;
+      position: sticky;
+      top: 0;
+      background: #0f0f1a;
+      z-index: 10;
     }
     .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
 
@@ -187,6 +191,9 @@ function getPageHtml(wsPort: number, lang: string): string {
       color: #444;
       font-size: 11px;
       border-top: 1px solid #1e1e30;
+      position: sticky;
+      bottom: 0;
+      background: #0f0f1a;
     }
   </style>
 </head>

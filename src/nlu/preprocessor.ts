@@ -122,6 +122,37 @@ function normalizeAccents(str: string): string {
   return str.replace(/[àâäéèêëïîôùûüÿçœæ]/g, (ch) => map[ch] ?? ch);
 }
 
+function normalizePlurals(words: string[]): string[] {
+  const irregulars: Record<string, string> = {
+    lignes: "ligne",
+    onglets: "onglet",
+    editeurs: "editeur",
+    curseurs: "curseur",
+    marqueurs: "marqueur",
+    signets: "signet",
+    extensions: "extension",
+    fichiers: "fichier",
+    fenetres: "fenetre",
+    terminaux: "terminal",
+    fonctions: "function",
+    classes: "classe",
+    symboles: "symbole",
+    tests: "test",
+    mots: "mot",
+    references: "reference",
+    implementations: "implementation",
+    espaces: "espace",
+  };
+
+  return words.map((w) => {
+    if (irregulars[w]) return irregulars[w];
+    if (w.length > 4 && w.endsWith("s") && !w.endsWith("ss")) {
+      return w.slice(0, -1);
+    }
+    return w;
+  });
+}
+
 export function preprocessText(raw: string): string {
   let text = raw.toLowerCase().trim();
 
@@ -132,17 +163,19 @@ export function preprocessText(raw: string): string {
     .replace(/\s+/g, " ")
     .trim();
 
-  const words = text.split(" ");
+  let words = text.split(" ");
+
   const cleaned: string[] = [];
-
   for (const word of words) {
-    if (FILLER_WORDS.has(word)) {
-      continue;
+    if (!FILLER_WORDS.has(word)) {
+      cleaned.push(word);
     }
-    cleaned.push(word);
   }
+  words = cleaned;
 
-  text = cleaned.join(" ");
+  words = normalizePlurals(words);
+
+  text = words.join(" ");
 
   for (const [fr, en] of Object.entries(FRENCH_TO_ENGLISH)) {
     const regex = new RegExp(`\\b${fr}\\b`, "gi");
