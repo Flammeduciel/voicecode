@@ -1,0 +1,12 @@
+out/
+node_modules/
+*.vsix
+.vscode-test/
+dist/
+models/
+*.onnx
+*.bin
+*.tar.bz2
+.DS_Store
+Thumbs.db
+debug.log

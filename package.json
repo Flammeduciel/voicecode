@@ -1,0 +1,115 @@
+{
+  "name": "voicecode",
+  "displayName": "VoiceCode",
+  "description": "Code with your voice - 100% local, no subscriptions",
+  "version": "0.1.0",
+  "publisher": "voicecode",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "voicecode.toggle",
+        "title": "VoiceCode: Toggle Recording"
+      },
+      {
+        "command": "voicecode.start",
+        "title": "VoiceCode: Start Recording"
+      },
+      {
+        "command": "voicecode.stop",
+        "title": "VoiceCode: Stop Recording"
+      },
+      {
+        "command": "voicecode.openPanel",
+        "title": "VoiceCode: Open Control Panel"
+      },
+      {
+        "command": "voicecode.showCommands",
+        "title": "VoiceCode: Show Available Commands"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "voicecode.toggle",
+        "key": "ctrl+shift+v"
+      },
+      {
+        "command": "voicecode.openPanel",
+        "key": "ctrl+shift+p"
+      }
+    ],
+    "configuration": {
+      "title": "VoiceCode",
+      "properties": {
+        "voicecode.microphone": {
+          "type": "string",
+          "default": "default",
+          "description": "Microphone device ID or 'default'"
+        },
+        "voicecode.language": {
+          "type": "string",
+          "default": "auto",
+          "enum": [
+            "auto",
+            "en",
+            "fr"
+          ],
+          "description": "Recognition language (auto, en, fr)"
+        },
+        "voicecode.modelDir": {
+          "type": "string",
+          "default": "",
+          "description": "Path to sherpa-onnx model directory"
+        },
+        "voicecode.vadThreshold": {
+          "type": "number",
+          "default": 0.5,
+          "description": "Voice Activity Detection threshold (0-1)"
+        },
+        "voicecode.silenceTimeout": {
+          "type": "number",
+          "default": 1200,
+          "description": "Silence duration in ms before finalizing utterance"
+        },
+        "voicecode.enableNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show VS Code notifications for executed actions"
+        },
+        "voicecode.enableWebview": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the VoiceCode control panel"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "node esbuild.config.mjs --production",
+    "watch": "node esbuild.config.mjs --watch",
+    "lint": "eslint src/",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.95.0",
+    "@vscode/vsce": "^3.0.0",
+    "esbuild": "^0.24.0",
+    "eslint": "^9.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.0.0"
+  },
+  "dependencies": {
+    "sherpa-onnx-node": "^1.13.0",
+    "zod": "^3.23.0"
+  }
+}
