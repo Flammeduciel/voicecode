@@ -8,8 +8,13 @@
 [![VS Code](https://img.shields.io/badge/VS%20Code-1.95+-007ACC.svg)](https://code.visualstudio.com/)
 [![Tests](https://img.shields.io/badge/tests-49%20passing-brightgreen)]()
 [![Platform](https://img.shields.io/badge/platform-Windows-blue)]()
+[![Status](https://img.shields.io/badge/status-work%20in%20progress-orange)]()
 
 </div>
+
+---
+
+> **⚠️ En cours de developpement** — Ce projet est en cours de developpement actif. Les APIs et fonctionnalites peuvent evoluer. Les contributions et retours sont bienvenus !
 
 ---
 
