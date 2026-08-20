@@ -6,6 +6,7 @@ import { NLUOrchestrator, createNLUOrchestrator } from "./nlu/orchestrator";
 import { EditorActions, createEditorActions } from "./editor/actions";
 import { StatusBar } from "./ui/status-bar";
 import { createSpeechServer, SpeechServer } from "./stt/speech-server";
+import { showNotification } from "./utils/debounce";
 import { getConfig } from "./config";
 import { log } from "./utils/logger";
 
@@ -34,31 +35,33 @@ export function createEngine(deps: EngineDeps): Engine {
 
   state.onStateChange(() => updateUI());
 
+  function handleFinal(text: string) {
+    log(`STT final: "${text}"`);
+
+    const nluResult = nlu.classify(text);
+    log(`Intent: ${nluResult.intent} (${nluResult.confidence})`);
+
+    editorActions.execute(nluResult).then((success) => {
+      const config = getConfig();
+      if (config.enableNotifications) {
+        if (success) {
+          showNotification(`Executed: ${nluResult.intent}`);
+        } else if (nluResult.intent !== "unknown") {
+          showNotification(`Could not execute: ${nluResult.intent}`, "warning");
+        } else {
+          showNotification(`Unknown: "${text}"`, "warning");
+        }
+      }
+    });
+
+    speechServer.sendAction(nluResult.intent, true);
+  }
+
   async function initSpeechServer() {
     await speechServer.start({
-      onResult: async (result) => {
+      onResult: (result) => {
         if (result.isFinal) {
-          log(`STT final: "${result.text}"`);
-          state.transition(AppState.Processing);
-
-          const nluResult = nlu.classify(result.text);
-          log(`Intent: ${nluResult.intent} (${nluResult.confidence})`);
-
-          const success = await editorActions.execute(nluResult);
-
-          const config = getConfig();
-          if (config.enableNotifications) {
-            const { showNotification } = await import("./utils/debounce");
-            if (success) {
-              showNotification(`Executed: ${nluResult.intent}`);
-            } else if (nluResult.intent !== "unknown") {
-              showNotification(`Could not execute: ${nluResult.intent}`, "warning");
-            } else {
-              showNotification(`Unknown command: "${result.text}"`, "warning");
-            }
-          }
-
-          state.transition(AppState.Recording);
+          handleFinal(result.text);
         }
       },
       onLanguageChange: (lang) => {
