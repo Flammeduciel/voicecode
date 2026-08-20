@@ -11,6 +11,13 @@
     "Other"
   ],
   "activationEvents": [],
+  "capabilities": {
+    "virtualWorkspaces": true,
+    "untrustedWorkspaces": {
+      "supported": true,
+      "description": "VoiceCode needs microphone access for speech recognition"
+    }
+  },
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
@@ -109,8 +116,10 @@
     "vitest": "^2.0.0"
   },
   "dependencies": {
+    "@types/ws": "^8.18.1",
     "node-cpal": "^0.1.1",
     "sherpa-onnx-node": "^1.13.0",
+    "ws": "^8.21.3",
     "zod": "^3.23.0"
   }
 }
