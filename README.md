@@ -2,7 +2,7 @@
 
 # VoiceCode
 
-### Code with your voice. No keyboard. No cloud. No subscriptions.
+### Code with your voice. 80+ commands. French & English.
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![VS Code](https://img.shields.io/badge/VS%20Code-1.95+-007ACC.svg)](https://code.visualstudio.com/)
@@ -17,73 +17,60 @@
 
 VoiceCode is a **VS Code extension** that lets you write code entirely by voice. Speak your commands in **French or English**, and VoiceCode understands and executes them instantly.
 
-- **Zero subscriptions** — no API keys, no cloud services, no monthly fees
-- **100% local** — everything runs on your machine, your code never leaves your computer
-- **Privacy-first** — no data sent anywhere, ever
+- **80+ voice commands** — navigation, editing, git, debug, bookmarks, and more
 - **Bilingual** — speak French or English, VoiceCode understands both
+- **Instant execution** — commands apply immediately when recognized
+- **Fuzzy matching** — handles plurals, typos, and close variations
+
+Speech recognition runs in **Chrome** via the Web Speech API, giving you Google-quality transcription for free.
 
 ---
 
 ## How it Works
 
 ```
-You speak → Micro captures → Speech-to-Text (local) → NLU interprets → VS Code executes
+You speak → Chrome recognizes → WebSocket → NLU interprets → VS Code executes
 ```
 
 1. **Press `Ctrl+Shift+V`** to start listening
-2. **Speak a command** like `"supprime la ligne 15"` or `"undo"`
-3. **VoiceCode executes it** in your editor instantly
+2. **Chrome opens** with a speech recognition page
+3. **Speak a command** like `"supprime la ligne 15"` or `"undo"`
+4. **VoiceCode executes it** in your editor instantly
 
-The entire pipeline runs locally on your machine:
-
-| Component | Technology | Size |
-|-----------|-----------|------|
-| Microphone capture | node-cpal (native) | ~2 MB |
-| Speech-to-Text | sherpa-onnx Zipformer | ~296 MB |
-| Voice Activity Detection | Silero VAD | ~2 MB |
-| NLU (intent recognition) | Regex + Levenshtein | ~5 KB |
-| Total download | | **~300 MB** |
-
-No internet required after initial setup.
+| Component | Technology |
+|-----------|-----------|
+| Speech Recognition | Chrome Web Speech API (Google) |
+| Communication | WebSocket (localhost) |
+| NLU | Regex patterns + Levenshtein fuzzy matching |
+| Execution | VS Code Editor API |
 
 ---
 
 ## Quick Start
 
-### 1. Download the STT Model (~296 MB)
-
-Run this PowerShell script from the project root:
-
-```powershell
-./scripts/download-models.ps1
-```
-
-Or download manually from:
-https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-streaming-zipformer-en-2023-06-26.tar.bz2
-
-Extract to `models/sherpa-onnx-streaming-zipformer-en-2023-06-26/`.
-
-### 2. Install Dependencies
+### 1. Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Build
+### 2. Build
 
 ```bash
 npm run build
 ```
 
-### 4. Run in VS Code
+### 3. Run in VS Code
 
 1. Open this project in VS Code
 2. Press `F5` to launch the Extension Development Host
 3. In the new VS Code window, press `Ctrl+Shift+V` to start recording
+4. Chrome opens automatically — keep the tab open
+5. Speak your commands!
 
 ---
 
-## Voice Commands
+## Voice Commands (80+)
 
 ### Navigation
 
@@ -92,10 +79,20 @@ npm run build
 | `"va à la ligne 15"` | `"go to line 15"` | Jump to line 15 |
 | `"va au début"` | `"go to start"` | Jump to start of file |
 | `"va à la fin"` | `"go to end"` | Jump to end of file |
-| `"monte"` | `"go up"` | Move cursor up |
-| `"descend"` | `"go down"` | Move cursor down |
-| `"gauche"` | `"go left"` | Move cursor left |
-| `"droite"` | `"go right"` | Move cursor right |
+| `"monte"` / `"descend"` | `"up"` / `"down"` | Move cursor up/down |
+| `"gauche"` / `"droite"` | `"left"` / `"right"` | Move cursor left/right |
+| `"va au mot gauche"` | `"move word left"` | Move one word left |
+| `"va au mot droite"` | `"move word right"` | Move one word right |
+| `"va à la définition"` | `"go to definition"` | Go to symbol definition |
+| `"va aux références"` | `"go to references"` | Find all references |
+
+### Scrolling
+
+| French | English | Action |
+|--------|---------|--------|
+| `"défile haut"` / `"défile bas"` | `"scroll up"` / `"scroll down"` | Scroll lines |
+| `"page haut"` / `"page bas"` | `"page up"` / `"page down"` | Scroll pages |
+| `"va au début"` / `"va à la fin"` | `"scroll to top"` / `"scroll to bottom"` | Jump to top/bottom |
 
 ### Editing
 
@@ -104,54 +101,136 @@ npm run build
 | `"annule"` | `"undo"` | Undo last action |
 | `"refais"` | `"redo"` | Redo last action |
 | `"supprime la ligne"` | `"delete line"` | Delete current line |
-| `"supprime la ligne 15"` | `"delete line 15"` | Delete specific line |
+| `"supprime le mot"` | `"delete word"` | Delete next word |
 | `"duplique la ligne"` | `"duplicate line"` | Duplicate current line |
-| `"copie"` | `"copy"` | Copy to clipboard |
-| `"colle"` | `"paste"` | Paste from clipboard |
-| `"coupe"` | `"cut"` | Cut to clipboard |
+| `"déplace ligne haut"` / `"bas"` | `"move line up"` / `"down"` | Move line up/down |
+| `"joindre lignes"` | `"join lines"` | Join with next line |
+| `"trier lignes"` | `"sort lines"` | Sort selected lines |
+| `"majuscule"` / `"minuscule"` | `"uppercase"` / `"lowercase"` | Transform text case |
+| `"copie"` / `"colle"` / `"coupe"` | `"copy"` / `"paste"` / `"cut"` | Clipboard actions |
+| `"indente"` / `"déindente"` | `"indent"` / `"outdent"` | Indent/outdent |
+
+### Selection & Multi-Cursor
+
+| French | English | Action |
+|--------|---------|--------|
 | `"sélectionne tout"` | `"select all"` | Select all text |
 | `"sélectionne la ligne"` | `"select line"` | Select current line |
-| `"nouvelle ligne en dessous"` | `"new line below"` | Insert line below |
-| `"nouvelle ligne au-dessus"` | `"new line above"` | Insert line above |
-| `"indente"` | `"indent"` | Indent line |
-| `"déindente"` | `"outdent"` | Outdent line |
+| `"sélectionne le mot"` | `"select word"` | Select word |
+| `"ajoute curseur dessus"` | `"add cursor above"` | Add cursor above |
+| `"ajoute curseur dessous"` | `"add cursor below"` | Add cursor below |
+| `"sélectionne suivante"` | `"select next occurrence"` | Select next match |
+| `"nouvelle ligne dessous"` | `"line below"` | Insert line below |
+| `"nouvelle ligne dessus"` | `"line above"` | Insert line above |
+
+### Comment & Fold
+
+| French | English | Action |
+|--------|---------|--------|
+| `"commente la ligne"` | `"toggle comment"` | Comment/uncomment line |
+| `"commente en bloc"` | `"block comment"` | Block comment |
+| `"plie"` / `"déplie"` | `"fold"` / `"unfold"` | Fold/unfold code |
+| `"plie tout"` / `"déplie tout"` | `"fold all"` / `"unfold all"` | Fold/unfold everything |
+| `"plie niveau 2"` | `"fold level 2"` | Fold to level 2 |
 
 ### Search & Replace
 
 | French | English | Action |
 |--------|---------|--------|
-| `"remplace foo par bar"` | `"replace foo with bar"` | Find and replace |
 | `"cherche HelloWorld"` | `"find HelloWorld"` | Search in file |
+| `"remplace foo par bar"` | `"replace foo with bar"` | Find and replace |
+| `"cherche suivant"` | `"find next"` | Next search result |
+| `"remplace tout"` | `"replace all"` | Replace all matches |
+| `"ferme la recherche"` | `"close search"` | Close search widget |
+
+### Tabs & Editors
+
+| French | English | Action |
+|--------|---------|--------|
+| `"suivant"` / `"précédent"` | `"next tab"` / `"previous tab"` | Switch tabs |
+| `"ferme tout"` | `"close all tabs"` | Close all tabs |
+| `"rouvre l'onglet"` | `"reopen tab"` | Reopen closed tab |
+| `"épingle onglet"` | `"pin tab"` | Pin/unpin tab |
+| `"divise l'éditeur"` | `"split editor"` | Split editor |
+| `"éditeur suivant"` | `"next editor"` | Next editor group |
 
 ### Files & Terminal
 
 | French | English | Action |
 |--------|---------|--------|
-| `"sauvegarde"` | `"save"` | Save current file |
-| `"ferme l'onglet"` | `"close tab"` | Close current tab |
+| `"sauvegarde"` / `"sauve tout"` | `"save"` / `"save all"` | Save file(s) |
 | `"nouveau fichier"` | `"new file"` | Create new file |
-| `"ouvre le terminal"` | `"open terminal"` | Open terminal panel |
+| `"ferme l'onglet"` | `"close tab"` | Close current tab |
+| `"ouvre le terminal"` | `"open terminal"` | Open terminal |
+| `"efface terminal"` | `"clear terminal"` | Clear terminal |
+| `"focus terminal"` | `"focus terminal"` | Focus terminal |
 | `"lance les tests"` | `"run tests"` | Run test command |
 | `"compile"` | `"build"` | Run build command |
+| `"formate"` | `"format"` | Format document |
 
-### Formatting
+### UI & Panels
 
 | French | English | Action |
 |--------|---------|--------|
-| `"formate"` | `"format"` | Format document |
+| `"montre barre latérale"` | `"toggle sidebar"` | Show/hide sidebar |
+| `"montre le panneau"` | `"toggle panel"` | Show/hide panel |
+| `"explorateur"` | `"toggle explorer"` | Toggle file explorer |
+| `"zoom"` / `"dézoom"` | `"zoom in"` / `"zoom out"` | Zoom in/out |
+| `"paramètres"` | `"open settings"` | Open settings |
+| `"extensions"` | `"open extensions"` | Open extensions |
+| `"nouvelle fenêtre"` | `"new window"` | Open new window |
 
-### Punctuation (while dictating)
+### Git
 
-| Say | Get |
-|-----|-----|
-| `"point"` / `"period"` | `.` |
-| `"virgule"` / `"comma"` | `,` |
-| `"point virgule"` / `"semicolon"` | `;` |
-| `"deux points"` / `"colon"` | `:` |
-| `"parenthèse ouvrante"` / `"open paren"` | `(` |
-| `"parenthèse fermante"` / `"close paren"` | `)` |
-| `"accolade ouvrante"` / `"open brace"` | `{` |
-| `"accolade fermante"` / `"close brace"` | `}` |
+| French | English | Action |
+|--------|---------|--------|
+| `"git commit"` | `"git commit"` | Commit changes |
+| `"git push"` | `"git push"` | Push to remote |
+| `"git pull"` | `"git pull"` | Pull from remote |
+| `"git statut"` | `"git status"` | Show git status |
+| `"git diff"` | `"git diff"` | Show diff |
+| `"git journal"` | `"git log"` | Show git log |
+
+### Debug
+
+| French | English | Action |
+|--------|---------|--------|
+| `"démarre le debug"` | `"start debugging"` | Start debugging |
+| `"arrête le debug"` | `"stop debugging"` | Stop debugging |
+| `"palier dessus"` | `"step over"` | Step over |
+| `"palier dessous"` | `"step into"` | Step into |
+| `"palier sortir"` | `"step out"` | Step out |
+| `"continue"` | `"continue"` | Continue execution |
+| `"ajoute breakpoint"` | `"toggle breakpoint"` | Toggle breakpoint |
+
+### Refactor & Navigation
+
+| French | English | Action |
+|--------|---------|--------|
+| `"renomme le symbole"` | `"rename symbol"` | Rename symbol |
+| `"correction rapide"` | `"quick fix"` | Show quick fixes |
+| `"refactorise"` | `"refactor"` | Refactor action |
+| `"aperçu définition"` | `"peek definition"` | Peek at definition |
+
+### Bookmarks
+
+| French | English | Action |
+|--------|---------|--------|
+| `"ajoute signet"` | `"toggle bookmark"` | Toggle bookmark |
+| `"signet suivant"` | `"next bookmark"` | Next bookmark |
+| `"signet précédent"` | `"previous bookmark"` | Previous bookmark |
+
+### Fuzzy Matching
+
+VoiceCode handles **plural forms** and **close variations**:
+
+| You say | Recognized as |
+|---------|---------------|
+| `"sélectionne les lignes"` | `"select line"` |
+| `"ferme les onglets"` | `"close tab"` |
+| `"supprime les mots"` | `"delete word"` |
+| `"annulez"` | `"undo"` |
+| `"sauvegardez"` | `"save"` |
 
 ---
 
@@ -161,13 +240,8 @@ Open VS Code Settings (`Ctrl+,`) and search for **VoiceCode**:
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `voicecode.microphone` | `"default"` | Microphone device name or `"default"` |
-| `voicecode.language` | `"auto"` | Recognition language (`auto`, `en`, `fr`) |
-| `voicecode.modelDir` | `""` | Custom path to STT model directory |
-| `voicecode.vadThreshold` | `0.5` | Voice detection sensitivity (0-1) |
-| `voicecode.silenceTimeout` | `1200` | Silence duration (ms) before finalizing speech |
+| `voicecode.language` | `"fr"` | Recognition language (`en`, `fr`) |
 | `voicecode.enableNotifications` | `true` | Show VS Code notifications for actions |
-| `voicecode.enableWebview` | `true` | Show the VoiceCode control panel |
 
 ---
 
@@ -176,7 +250,6 @@ Open VS Code Settings (`Ctrl+,`) and search for **VoiceCode**:
 | Shortcut | Action |
 |----------|--------|
 | `Ctrl+Shift+V` | Toggle recording on/off |
-| `Ctrl+Shift+P` | Open VoiceCode control panel |
 
 ---
 
@@ -187,64 +260,51 @@ voicecode/
 ├── src/
 │   ├── extension.ts           # VS Code extension entry point
 │   ├── engine.ts              # Main orchestration engine
-│   ├── state-machine.ts       # idle → recording → processing
+│   ├── state-machine.ts       # idle → recording
 │   ├── config.ts              # VS Code settings reader
 │   │
-│   ├── audio/
-│   │   ├── capture.ts         # Microphone → Float32Array (node-cpal)
-│   │   └── processor.ts       # Audio normalization/resampling
-│   │
 │   ├── stt/
-│   │   ├── engine.ts          # STT interface
-│   │   ├── sherpa.ts          # sherpa-onnx streaming recognizer
-│   │   └── manager.ts         # STT lifecycle management
+│   │   └── speech-server.ts   # HTTP + WebSocket server + Chrome page
 │   │
 │   ├── nlu/
 │   │   ├── orchestrator.ts    # Routes text through NLU layers
-│   │   ├── preprocessor.ts    # Cleans text, FR→EN synonyms
-│   │   ├── patterns.ts        # 35+ regex patterns (FR/EN)
-│   │   ├── fast-path.ts       # Levenshtein fuzzy matching
-│   │   ├── intents.ts         # Intent definitions
+│   │   ├── preprocessor.ts    # Cleans text, FR→EN, plural normalization
+│   │   ├── patterns.ts        # 80+ regex patterns (FR/EN)
+│   │   ├── fast-path.ts       # Levenshtein fuzzy matching (120+ commands)
+│   │   ├── intents.ts         # Intent definitions (80+ intents)
 │   │   ├── entities.ts        # Entity extraction (numbers, files)
 │   │   └── numbers.ts         # "quinze" → 15 (FR/EN)
 │   │
 │   ├── editor/
-│   │   ├── actions.ts         # VS Code editor actions
+│   │   ├── actions.ts         # VS Code editor actions (80+ commands)
 │   │   └── context.ts         # Editor state (cursor, selection)
 │   │
 │   └── ui/
-│       ├── status-bar.ts      # Recording state indicator
-│       └── webview/
-│           └── panel.ts       # Live transcript + action log
+│       └── status-bar.ts      # Recording state indicator
 │
 ├── test/                      # 37 unit tests
-├── scripts/
-│   └── download-models.ps1    # Model download script
-└── models/                    # STT models (after download)
+└── dist/                      # Built extension
 ```
 
 ### Data Flow
 
 ```
-Microphone Audio (16kHz PCM)
-    │
+Chrome Speech Recognition (Web Speech API)
+    │  Google-quality transcription in FR/EN
     ▼
-Voice Activity Detection (Silero VAD)
-    │  Detects speech start/end, filters silence
-    ▼
-Speech-to-Text (sherpa-onnx Zipformer)
-    │  Real-time streaming transcription
+WebSocket (localhost)
+    │  Real-time transcript streaming
     ▼
 Preprocessor
-    │  Remove fillers, normalize accents, FR→EN synonyms
+    │  Remove fillers, normalize accents, FR→EN, plural normalization
     ▼
-NLU Fast Path (< 1ms)
-    │  Regex patterns + Levenshtein fuzzy matching
+NLU Pipeline (< 1ms)
+    │  Regex patterns → Levenshtein fuzzy matching
     ▼
 VS Code Action
-    │  Editor API calls (navigation, editing, files, terminal)
+    │  Editor API calls (navigation, editing, git, debug, etc.)
     ▼
-Feedback (notification + webview update)
+Feedback (notification + Chrome action feed)
 ```
 
 ---
@@ -254,8 +314,8 @@ Feedback (notification + webview update)
 | Component | Choice | Why |
 |-----------|--------|-----|
 | Language | TypeScript | VS Code native, type safety |
-| STT | sherpa-onnx | True streaming, prebuilt binaries, no compilation |
-| VAD | Silero VAD | Integrated with sherpa-onnx |
+| Speech Recognition | Chrome Web Speech API | Google-quality, free, no setup |
+| Communication | WebSocket (ws) | Real-time localhost streaming |
 | NLU | Regex + Levenshtein | < 1ms latency, no model needed |
 | Build | esbuild | Fast bundling, VS Code compatible |
 | Testing | Vitest | Fast, TypeScript-native |
@@ -268,6 +328,7 @@ Feedback (notification + webview update)
 
 - Node.js 20+
 - VS Code 1.95+
+- Google Chrome (for speech recognition)
 - Windows (primary target)
 
 ### Commands
@@ -284,9 +345,6 @@ npm run build
 
 # Watch mode (rebuild on change)
 npm run watch
-
-# Download STT model
-./scripts/download-models.ps1
 ```
 
 ### Run in Development
@@ -295,23 +353,29 @@ npm run watch
 2. Press `F5` to launch Extension Development Host
 3. The extension activates automatically
 4. Press `Ctrl+Shift+V` to start recording
+5. Chrome opens with the speech recognition page
+6. Speak your commands!
 
 ---
 
 ## Roadmap
 
-- [x] Audio capture (node-cpal)
-- [x] STT streaming (sherpa-onnx)
-- [x] NLU fast path (35+ commands)
-- [x] Editor actions (navigation, editing, files)
-- [x] Webview panel with live transcript
+- [x] Chrome Web Speech API integration
+- [x] WebSocket server for real-time transcripts
+- [x] NLU pipeline (80+ commands FR/EN)
+- [x] Fuzzy matching with plural normalization
+- [x] Instant command execution
 - [x] Status bar with recording state
-- [x] Bilingual support (FR/EN)
-- [ ] Voice Activity Detection tuning
-- [ ] Local LLM integration (code generation)
+- [x] Git commands (commit, push, pull, diff, log)
+- [x] Debug commands (start, stop, step, breakpoint)
+- [x] Bookmark management
+- [x] Multi-cursor support
+- [x] Code folding
+- [ ] Voice Activity Detection (auto-start/stop)
 - [ ] Custom command definitions
 - [ ] Multi-monitor support
 - [ ] Remote SSH support
+- [ ] Dictation mode (type code by voice)
 
 ---
 
