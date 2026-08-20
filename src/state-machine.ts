@@ -22,6 +22,10 @@ export class StateMachine {
     return this.state === AppState.Recording;
   }
 
+  isProcessing(): boolean {
+    return this.state === AppState.Processing;
+  }
+
   transition(next: AppState): boolean {
     if (!this.canTransition(this.state, next)) {
       return false;
