@@ -6,17 +6,18 @@ export interface WebviewPanel {
   show(): void;
   hide(): void;
   toggle(): void;
-  sendTranscript(text: string, isFinal: boolean): void;
-  sendAction(intent: string, success: boolean): void;
-  sendStatus(status: string): void;
   sendLanguage(lang: PanelLanguage): void;
-  sendAudioLevel(level: number, waveform: number[]): void;
+  sendStartListening(): void;
+  sendStopListening(): void;
+  onTranscript(listener: (text: string, isFinal: boolean) => void): void;
   onLanguageChange(listener: (lang: PanelLanguage) => void): void;
+  sendAction(intent: string, success: boolean): void;
   dispose(): void;
 }
 
 export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
   let panel: vscode.WebviewPanel | undefined;
+  let transcriptListeners: ((text: string, isFinal: boolean) => void)[] = [];
   let langListeners: ((lang: PanelLanguage) => void)[] = [];
 
   function getHtml(): string {
@@ -74,10 +75,6 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
       background: var(--vscode-button-background);
       color: var(--vscode-button-foreground);
     }
-    .lang-btn:hover:not(.active) {
-      background: var(--vscode-input-background);
-      opacity: 0.8;
-    }
     .section { margin-bottom: 16px; }
     .section-title {
       font-size: 11px;
@@ -110,9 +107,7 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
       border-radius: 1px;
       transition: height 0.08s ease;
     }
-    .waveform-bar.active {
-      background: #c0392b;
-    }
+    .waveform-bar.active { background: #c0392b; }
     .waveform-level {
       font-size: 10px;
       color: var(--vscode-descriptionForeground);
@@ -134,10 +129,7 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
     }
     .transcript-partial { color: var(--vscode-descriptionForeground); font-style: italic; }
     .transcript-final { color: var(--vscode-foreground); }
-    .action-log {
-      max-height: 200px;
-      overflow-y: auto;
-    }
+    .action-log { max-height: 200px; overflow-y: auto; }
     .action-item {
       display: flex;
       align-items: center;
@@ -157,14 +149,20 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
       padding: 20px;
       font-size: 12px;
     }
+    .error-state {
+      color: #c0392b;
+      text-align: center;
+      padding: 10px;
+      font-size: 11px;
+    }
   </style>
 </head>
 <body>
   <div class="header">
     <h2>VoiceCode</h2>
     <div class="lang-switcher">
-      <button class="lang-btn active" id="lang-en" onclick="switchLang('en')">EN</button>
-      <button class="lang-btn" id="lang-fr" onclick="switchLang('fr')">FR</button>
+      <button class="lang-btn" id="lang-en" onclick="switchLang('en')">EN</button>
+      <button class="lang-btn active" id="lang-fr" onclick="switchLang('fr')">FR</button>
     </div>
     <span id="status" class="status-badge status-idle">IDLE</span>
   </div>
@@ -190,15 +188,14 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
   </div>
 
   <script>
-    const transcript = document.getElementById('transcript');
-    const actions = document.getElementById('actions');
-    const status = document.getElementById('status');
+    const vscode = acquireVsCodeApi();
+    const transcriptEl = document.getElementById('transcript');
+    const actionsEl = document.getElementById('actions');
+    const statusEl = document.getElementById('status');
     const waveformEl = document.getElementById('waveform');
     const levelEl = document.getElementById('level');
-    let hasContent = false;
-    const vscode = acquireVsCodeApi();
-
     const NUM_BARS = 32;
+
     for (let i = 0; i < NUM_BARS; i++) {
       const bar = document.createElement('div');
       bar.className = 'waveform-bar';
@@ -206,47 +203,154 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
       waveformEl.appendChild(bar);
     }
 
+    let recognition = null;
+    let audioCtx = null;
+    let analyser = null;
+    let animFrame = null;
+    let currentLang = 'fr';
+    let isListening = false;
+    let hasContent = false;
+
+    const LANG_MAP = { en: 'en-US', fr: 'fr-FR' };
+
     function switchLang(lang) {
+      currentLang = lang;
       document.getElementById('lang-en').className = 'lang-btn' + (lang === 'en' ? ' active' : '');
       document.getElementById('lang-fr').className = 'lang-btn' + (lang === 'fr' ? ' active' : '');
       vscode.postMessage({ type: 'switchLanguage', lang: lang });
+      if (isListening) {
+        stopRecognition();
+        startRecognition();
+      }
+    }
+
+    function setStatus(s) {
+      statusEl.textContent = s.toUpperCase();
+      statusEl.className = 'status-badge status-' + s;
+      if (s === 'idle') {
+        const bars = waveformEl.children;
+        for (let i = 0; i < NUM_BARS; i++) {
+          bars[i].style.height = '2px';
+          bars[i].className = 'waveform-bar';
+        }
+        levelEl.textContent = '0%';
+      }
+    }
+
+    function startWaveform(stream) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 64;
+      const source = audioCtx.createMediaStreamSource(stream);
+      source.connect(analyser);
+      const data = new Uint8Array(analyser.frequencyBinCount);
+
+      function draw() {
+        analyser.getByteFrequencyData(data);
+        const bars = waveformEl.children;
+        let sum = 0;
+        for (let i = 0; i < NUM_BARS && i < data.length; i++) {
+          const val = data[i] / 255;
+          sum += val;
+          const h = Math.max(2, Math.round(val * 22));
+          bars[i].style.height = h + 'px';
+          bars[i].className = 'waveform-bar' + (val > 0.05 ? ' active' : '');
+        }
+        const avg = data.length > 0 ? sum / data.length : 0;
+        levelEl.textContent = Math.round(avg * 100) + '%';
+        animFrame = requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    function stopWaveform() {
+      if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+      if (audioCtx) { audioCtx.close().catch(()=>{}); audioCtx = null; }
+      analyser = null;
+    }
+
+    function startRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        const t = document.createElement('div');
+        t.className = 'error-state';
+        t.textContent = 'Speech Recognition not supported. Use Chrome.';
+        transcriptEl.innerHTML = '';
+        transcriptEl.appendChild(t);
+        return;
+      }
+
+      recognition = new SpeechRecognition();
+      recognition.lang = LANG_MAP[currentLang] || 'fr-FR';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+
+      recognition.onresult = (event) => {
+        let lastFinalIdx = -1;
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const result = event.results[i];
+          const text = result[0].transcript.trim();
+          if (result.isFinal) {
+            lastFinalIdx = i;
+            vscode.postMessage({ type: 'sttResult', text: text, isFinal: true });
+          } else {
+            vscode.postMessage({ type: 'sttResult', text: text, isFinal: false });
+          }
+        }
+      };
+
+      recognition.onerror = (event) => {
+        if (event.error === 'no-speech') return;
+        if (event.error === 'aborted') return;
+        console.error('Speech recognition error:', event.error);
+      };
+
+      recognition.onend = () => {
+        if (isListening) {
+          try { recognition.start(); } catch(e) {}
+        }
+      };
+
+      navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+        startWaveform(stream);
+        recognition.start();
+        isListening = true;
+        setStatus('recording');
+      }).catch((err) => {
+        const t = document.createElement('div');
+        t.className = 'error-state';
+        t.textContent = 'Microphone access denied. Allow mic in browser settings.';
+        transcriptEl.innerHTML = '';
+        transcriptEl.appendChild(t);
+        console.error('getUserMedia error:', err);
+      });
+    }
+
+    function stopRecognition() {
+      isListening = false;
+      if (recognition) {
+        try { recognition.abort(); } catch(e) {}
+        recognition = null;
+      }
+      stopWaveform();
+      setStatus('idle');
     }
 
     window.addEventListener('message', (event) => {
       const msg = event.data;
-
       switch (msg.type) {
-        case 'audio':
-          const bars = waveformEl.children;
-          const wf = msg.waveform || [];
-          for (let i = 0; i < NUM_BARS; i++) {
-            const val = i < wf.length ? wf[i] : 0;
-            const h = Math.max(2, Math.round(val * 22));
-            bars[i].style.height = h + 'px';
-            bars[i].className = 'waveform-bar' + (val > 0.05 ? ' active' : '');
-          }
-          levelEl.textContent = Math.round(msg.level * 100) + '%';
+        case 'startListening':
+          startRecognition();
           break;
-
-        case 'transcript':
-          if (!hasContent) {
-            transcript.innerHTML = '';
-            hasContent = true;
-          }
-          const div = document.createElement('div');
-          div.className = msg.isFinal ? 'transcript-final' : 'transcript-partial';
-          div.textContent = msg.text;
-          if (!msg.isFinal) {
-            const last = transcript.lastElementChild;
-            if (last && last.classList.contains('transcript-partial')) {
-              last.textContent = msg.text;
-              return;
-            }
-          }
-          transcript.appendChild(div);
-          transcript.scrollTop = transcript.scrollHeight;
+        case 'stopListening':
+          stopRecognition();
           break;
-
+        case 'setLanguage':
+          currentLang = msg.lang;
+          document.getElementById('lang-en').className = 'lang-btn' + (msg.lang === 'en' ? ' active' : '');
+          document.getElementById('lang-fr').className = 'lang-btn' + (msg.lang === 'fr' ? ' active' : '');
+          break;
         case 'action':
           const actionDiv = document.createElement('div');
           actionDiv.className = 'action-item';
@@ -255,25 +359,7 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
             (msg.success ? '\\u2714' : '\\u2718') + '</span>' +
             '<span class="action-text">' + msg.intent + '</span>' +
             '<span class="action-time">' + new Date().toLocaleTimeString() + '</span>';
-          actions.insertBefore(actionDiv, actions.firstChild);
-          break;
-
-        case 'status':
-          status.textContent = msg.status.toUpperCase();
-          status.className = 'status-badge status-' + msg.status;
-          if (msg.status === 'idle') {
-            const bars2 = waveformEl.children;
-            for (let i = 0; i < NUM_BARS; i++) {
-              bars2[i].style.height = '2px';
-              bars2[i].className = 'waveform-bar';
-            }
-            levelEl.textContent = '0%';
-          }
-          break;
-
-        case 'language':
-          document.getElementById('lang-en').className = 'lang-btn' + (msg.lang === 'en' ? ' active' : '');
-          document.getElementById('lang-fr').className = 'lang-btn' + (msg.lang === 'fr' ? ' active' : '');
+          actionsEl.insertBefore(actionDiv, actionsEl.firstChild);
           break;
       }
     });
@@ -302,6 +388,11 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
             listener(msg.lang as PanelLanguage);
           }
         }
+        if (msg.type === "sttResult") {
+          for (const listener of transcriptListeners) {
+            listener(msg.text, msg.isFinal);
+          }
+        }
       });
 
       panel.onDidDispose(() => {
@@ -322,28 +413,28 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
       }
     },
 
-    sendTranscript(text: string, isFinal: boolean) {
-      panel?.webview.postMessage({ type: "transcript", text, isFinal });
-    },
-
-    sendAction(intent: string, success: boolean) {
-      panel?.webview.postMessage({ type: "action", intent, success });
-    },
-
-    sendStatus(status: string) {
-      panel?.webview.postMessage({ type: "status", status });
-    },
-
     sendLanguage(lang: PanelLanguage) {
-      panel?.webview.postMessage({ type: "language", lang });
+      panel?.webview.postMessage({ type: "setLanguage", lang });
     },
 
-    sendAudioLevel(level: number, waveform: number[]) {
-      panel?.webview.postMessage({ type: "audio", level, waveform });
+    sendStartListening() {
+      panel?.webview.postMessage({ type: "startListening" });
+    },
+
+    sendStopListening() {
+      panel?.webview.postMessage({ type: "stopListening" });
+    },
+
+    onTranscript(listener: (text: string, isFinal: boolean) => void) {
+      transcriptListeners.push(listener);
     },
 
     onLanguageChange(listener: (lang: PanelLanguage) => void) {
       langListeners.push(listener);
+    },
+
+    sendAction(intent: string, success: boolean) {
+      panel?.webview.postMessage({ type: "action", intent, success });
     },
 
     dispose() {
