@@ -42,12 +42,22 @@ export function activate(context: vscode.ExtensionContext) {
 
   const helpCmd = vscode.commands.registerCommand("voicecode.showCommands", () => {
     const commands = [
-      "Navigation: 'va a la ligne 15', 'go to start', 'monte', 'descend'",
-      "Editing: 'annule', 'refais', 'supprime la ligne', 'copie', 'colle'",
-      "Files: 'sauvegarde', 'ferme l'onglet', 'nouveau fichier'",
-      "Terminal: 'ouvre le terminal', 'lance les tests', 'compile'",
-      "Replace: 'remplace foo par bar'",
-      "Punctuation: 'point', 'virgule', 'point virgule'",
+      "Navigation: 'va a la ligne 15', 'debut', 'fin', 'monte', 'descend', 'gauche', 'droite'",
+      "Scroll: 'defile haut', 'page bas'",
+      "Editing: 'annule', 'refais', 'copie', 'colle', 'coupe', 'supprime la ligne', 'duplique la ligne'",
+      "Move: 'deplace ligne haut', 'joindre lignes', 'trier lignes', 'majuscule', 'minuscule'",
+      "Selection: 'selectionne tout', 'selectionne la ligne', 'selectionne le mot'",
+      "Multi-cursor: 'ajoute curseur dessus', 'selectionne suivante'",
+      "Comment: 'commente la ligne', 'commente en bloc'",
+      "Fold: 'plie', 'deplie', 'plie tout'",
+      "Search: 'cherche mot', 'remplace X par Y', 'cherche suivant', 'remplace tout'",
+      "Tabs: 'suivant', 'precedent', 'ferme tout', 'reouvre l'onglet'",
+      "Files: 'sauvegarde', 'nouveau fichier', 'ferme l'onglet'",
+      "Terminal: 'ouvre le terminal', 'efface terminal', 'focus terminal'",
+      "Panels: 'montre barre laterale', 'explorateur', 'parametres'",
+      "Git: 'git commit', 'git push', 'git pull', 'git statut'",
+      "Debug: 'demarre le debug', 'arrete', 'palier dessus', 'palier dessous'",
+      "Refactor: 'renomme le symbole', 'correction rapide', 'refactorise'",
     ];
     vscode.window.showInformationMessage(
       "VoiceCode Commands:\n" + commands.join("\n")

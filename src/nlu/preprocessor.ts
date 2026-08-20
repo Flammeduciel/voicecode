@@ -13,7 +13,7 @@ const FRENCH_TO_ENGLISH: Record<string, string> = {
   // Prepositions / conjunctions
   par: "with", pour: "for", dans: "in", sur: "on", de: "of", du: "of",
   et: "and", ou: "or", mais: "but", si: "if",
-  // Verbs
+  // Verbs - core
   creer: "create", cree: "create", creez: "create",
   supprimer: "delete", supprime: "delete", efface: "delete",
   ouvrir: "open", ouvre: "open",
@@ -39,12 +39,73 @@ const FRENCH_TO_ENGLISH: Record<string, string> = {
   haut: "up", bas: "down",
   gauche: "left", droite: "right",
   nouvelle: "new", nouveau: "new",
-  selection: "selection",
-  // Nouns
+  selectionne: "select",
+  // Nouns - core
   fichier: "file", ligne: "line", mot: "word",
   fonction: "function", classe: "class",
   commentaire: "comment", test: "tests",
   terminal: "terminal", fenetre: "window",
+  // Scroll
+  defiler: "scroll", defile: "scroll",
+  page: "page",
+  // Fold/Unfold
+  plier: "fold", plie: "fold", deplier: "unfold", deplie: "unfold",
+  // Tabs
+  onglet: "tab", onglets: "tabs",
+  prochain: "next", precedent: "previous",
+  epingler: "pin", epingle: "pin",
+  reouvrir: "reopen", reouvre: "reopen",
+  tous: "all", tout: "all",
+  // Editors
+  editeur: "editor", editeurs: "editors",
+  diviser: "split", divise: "split",
+  // Multi-cursor
+  curseur: "cursor",
+  occurrence: "occurrence", suivante: "next",
+  // Line operations
+  remonter: "move up", descendre: "move down",
+  joindre: "join", fusionner: "join",
+  trier: "sort", trie: "sort",
+  majuscule: "uppercase", minuscule: "lowercase",
+  espaces: "whitespace",
+  // Go to
+  definition: "definition",
+  references: "references",
+  implementations: "implementation",
+  apercu: "peek",
+  // Refactor
+  symbole: "symbol",
+  renommer: "rename", renomme: "rename",
+  corriger: "fix", corrige: "fix",
+  refactoriser: "refactor", refactorise: "refactor",
+  // Debug
+  deboguer: "debug", debogue: "debug",
+  arreter: "stop", arrete: "stop",
+  continuer: "continue",
+  palier: "step", pas: "step",
+  dessus: "over", dessous: "into",
+  sortir: "out",
+  breakpoint: "breakpoint", pause: "breakpoint",
+  // Git
+  git: "git", depot: "repository",
+  commit: "commit", pousser: "push", tirer: "pull",
+  statut: "status", journal: "log",
+  // Bookmarks
+  signet: "bookmark", signets: "bookmarks",
+  marqueur: "bookmark", marqueurs: "bookmarks",
+  // UI
+  barre: "bar", laterale: "sidebar", activite: "activity",
+  panneau: "panel", explorateur: "explorer",
+  parametres: "settings", preferences: "settings",
+  extensions: "extensions",
+  recent: "recent",
+  // Zoom
+  zoomer: "zoom in", dezoomer: "zoom out",
+  reinitialiser: "reset",
+  // Dictation
+  dicter: "dictate", dicte: "dictate",
+  parler: "speak", parle: "speak",
+  ecrire: "type", ecrit: "type",
 };
 
 function normalizeAccents(str: string): string {

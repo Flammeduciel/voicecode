@@ -36,13 +36,13 @@ function getPageHtml(wsPort: number, lang: string): string {
       min-height: 100vh;
     }
     .app {
-      max-width: 900px;
+      max-width: 1100px;
       margin: 0 auto;
       padding: 20px;
       display: grid;
-      grid-template-columns: 1fr 280px;
+      grid-template-columns: 1fr 340px;
       gap: 16px;
-      min-height: 100vh;
+      height: 100vh;
     }
     .main { display: flex; flex-direction: column; gap: 16px; }
     .sidebar { display: flex; flex-direction: column; gap: 16px; }
@@ -226,64 +226,151 @@ function getPageHtml(wsPort: number, lang: string): string {
       <div class="card" style="flex: 1; overflow-y: auto;">
         <div class="card-title">Available Commands</div>
         <div class="commands-grid">
-
           <div>
             <div class="cmd-group-title">Navigation</div>
             <div class="cmd-list">
               <div class="cmd-row"><span class="cmd-fr">va a la ligne 15</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">go to line 15</span></div>
-              <div class="cmd-row"><span class="cmd-fr">debut</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">start</span></div>
-              <div class="cmd-row"><span class="cmd-fr">fin</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">end</span></div>
-              <div class="cmd-row"><span class="cmd-fr">monte</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">up</span></div>
-              <div class="cmd-row"><span class="cmd-fr">descend</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">down</span></div>
-              <div class="cmd-row"><span class="cmd-fr">gauche</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">left</span></div>
-              <div class="cmd-row"><span class="cmd-fr">droite</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">right</span></div>
+              <div class="cmd-row"><span class="cmd-fr">debut / fin</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">start / end</span></div>
+              <div class="cmd-row"><span class="cmd-fr">monte / descend</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">up / down</span></div>
+              <div class="cmd-row"><span class="cmd-fr">gauche / droite</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">left / right</span></div>
+              <div class="cmd-row"><span class="cmd-fr">va au mot gauche</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">move word left</span></div>
+              <div class="cmd-row"><span class="cmd-fr">va au mot droite</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">move word right</span></div>
+              <div class="cmd-row"><span class="cmd-fr">va a la definition</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">go to definition</span></div>
+              <div class="cmd-row"><span class="cmd-fr">va aux references</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">go to references</span></div>
             </div>
           </div>
-
+          <div>
+            <div class="cmd-group-title">Scroll</div>
+            <div class="cmd-list">
+              <div class="cmd-row"><span class="cmd-fr">defile haut / bas</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">scroll up / down</span></div>
+              <div class="cmd-row"><span class="cmd-fr">page haut / bas</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">page up / down</span></div>
+              <div class="cmd-row"><span class="cmd-fr">va au debut / fin</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">scroll to top / bottom</span></div>
+            </div>
+          </div>
           <div>
             <div class="cmd-group-title">Editing</div>
             <div class="cmd-list">
-              <div class="cmd-row"><span class="cmd-fr">annule</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">undo</span></div>
-              <div class="cmd-row"><span class="cmd-fr">refais</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">redo</span></div>
-              <div class="cmd-row"><span class="cmd-fr">copie</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">copy</span></div>
-              <div class="cmd-row"><span class="cmd-fr">colle</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">paste</span></div>
-              <div class="cmd-row"><span class="cmd-fr">coupe</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">cut</span></div>
+              <div class="cmd-row"><span class="cmd-fr">annule / refais</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">undo / redo</span></div>
+              <div class="cmd-row"><span class="cmd-fr">copie / colle / coupe</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">copy / paste / cut</span></div>
               <div class="cmd-row"><span class="cmd-fr">supprime la ligne</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">delete line</span></div>
+              <div class="cmd-row"><span class="cmd-fr">supprime le mot</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">delete word</span></div>
               <div class="cmd-row"><span class="cmd-fr">duplique la ligne</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">duplicate line</span></div>
+              <div class="cmd-row"><span class="cmd-fr">deplace ligne haut/bas</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">move line up/down</span></div>
+              <div class="cmd-row"><span class="cmd-fr">joindre lignes</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">join lines</span></div>
+              <div class="cmd-row"><span class="cmd-fr">trier lignes</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">sort lines</span></div>
+              <div class="cmd-row"><span class="cmd-fr">majuscule / minuscule</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">uppercase / lowercase</span></div>
             </div>
           </div>
-
           <div>
-            <div class="cmd-group-title">Selection</div>
+            <div class="cmd-group-title">Selection & Cursors</div>
             <div class="cmd-list">
-              <div class="cmd-row"><span class="cmd-fr">selection tout</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">select all</span></div>
+              <div class="cmd-row"><span class="cmd-fr">selectionne tout</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">select all</span></div>
               <div class="cmd-row"><span class="cmd-fr">selectionne la ligne</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">select line</span></div>
+              <div class="cmd-row"><span class="cmd-fr">selectionne le mot</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">select word</span></div>
+              <div class="cmd-row"><span class="cmd-fr">ajoute curseur dessus</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">add cursor above</span></div>
+              <div class="cmd-row"><span class="cmd-fr">ajoute curseur dessous</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">add cursor below</span></div>
+              <div class="cmd-row"><span class="cmd-fr">selectionne suivante</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">select next occurrence</span></div>
               <div class="cmd-row"><span class="cmd-fr">nouvelle ligne dessous</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">line below</span></div>
               <div class="cmd-row"><span class="cmd-fr">nouvelle ligne dessus</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">line above</span></div>
             </div>
           </div>
-
+          <div>
+            <div class="cmd-group-title">Comment & Fold</div>
+            <div class="cmd-list">
+              <div class="cmd-row"><span class="cmd-fr">commente la ligne</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">toggle comment</span></div>
+              <div class="cmd-row"><span class="cmd-fr">commente en bloc</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">block comment</span></div>
+              <div class="cmd-row"><span class="cmd-fr">plie / deplie</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">fold / unfold</span></div>
+              <div class="cmd-row"><span class="cmd-fr">plie tout / deplie tout</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">fold all / unfold all</span></div>
+              <div class="cmd-row"><span class="cmd-fr">plie niveau 2</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">fold level 2</span></div>
+            </div>
+          </div>
           <div>
             <div class="cmd-group-title">Search & Replace</div>
             <div class="cmd-list">
-              <div class="cmd-row"><span class="cmd-fr">remplace X par Y</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">replace X with Y</span></div>
               <div class="cmd-row"><span class="cmd-fr">cherche mot</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">find word</span></div>
+              <div class="cmd-row"><span class="cmd-fr">remplace X par Y</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">replace X with Y</span></div>
+              <div class="cmd-row"><span class="cmd-fr">cherche suivant</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">find next</span></div>
+              <div class="cmd-row"><span class="cmd-fr">remplace tout</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">replace all</span></div>
+              <div class="cmd-row"><span class="cmd-fr">ferme la recherche</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">close search</span></div>
             </div>
           </div>
-
+          <div>
+            <div class="cmd-group-title">Tabs & Editors</div>
+            <div class="cmd-list">
+              <div class="cmd-row"><span class="cmd-fr">suivant / precedent</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">next / previous tab</span></div>
+              <div class="cmd-row"><span class="cmd-fr">ferme tout</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">close all tabs</span></div>
+              <div class="cmd-row"><span class="cmd-fr">reouvre l'onglet</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">reopen closed tab</span></div>
+              <div class="cmd-row"><span class="cmd-fr">epingle onglet</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">pin tab</span></div>
+              <div class="cmd-row"><span class="cmd-fr">divise l'editeur</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">split editor</span></div>
+            </div>
+          </div>
           <div>
             <div class="cmd-group-title">Files & Terminal</div>
             <div class="cmd-list">
-              <div class="cmd-row"><span class="cmd-fr">sauvegarde</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">save</span></div>
+              <div class="cmd-row"><span class="cmd-fr">sauvegarde / sauve tout</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">save / save all</span></div>
               <div class="cmd-row"><span class="cmd-fr">ferme l'onglet</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">close tab</span></div>
               <div class="cmd-row"><span class="cmd-fr">nouveau fichier</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">new file</span></div>
               <div class="cmd-row"><span class="cmd-fr">ouvre le terminal</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">open terminal</span></div>
+              <div class="cmd-row"><span class="cmd-fr">efface terminal</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">clear terminal</span></div>
+              <div class="cmd-row"><span class="cmd-fr">focus terminal</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">focus terminal</span></div>
               <div class="cmd-row"><span class="cmd-fr">lance les tests</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">run tests</span></div>
               <div class="cmd-row"><span class="cmd-fr">compile</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">build</span></div>
               <div class="cmd-row"><span class="cmd-fr">formate</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">format</span></div>
             </div>
           </div>
-
+          <div>
+            <div class="cmd-group-title">UI & Panels</div>
+            <div class="cmd-list">
+              <div class="cmd-row"><span class="cmd-fr">montre la barre laterale</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">toggle sidebar</span></div>
+              <div class="cmd-row"><span class="cmd-fr">montre le panneau</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">toggle panel</span></div>
+              <div class="cmd-row"><span class="cmd-fr">explorateur</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">toggle explorer</span></div>
+              <div class="cmd-row"><span class="cmd-fr">zoom / dezoom</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">zoom in / out</span></div>
+              <div class="cmd-row"><span class="cmd-fr">reinitialise zoom</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">reset zoom</span></div>
+              <div class="cmd-row"><span class="cmd-fr">parametres</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">open settings</span></div>
+              <div class="cmd-row"><span class="cmd-fr">extensions</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">open extensions</span></div>
+              <div class="cmd-row"><span class="cmd-fr">nouvelle fenetre</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">new window</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="cmd-group-title">Git</div>
+            <div class="cmd-list">
+              <div class="cmd-row"><span class="cmd-fr">git commit</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">git commit</span></div>
+              <div class="cmd-row"><span class="cmd-fr">git push</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">git push</span></div>
+              <div class="cmd-row"><span class="cmd-fr">git pull</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">git pull</span></div>
+              <div class="cmd-row"><span class="cmd-fr">git statut</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">git status</span></div>
+              <div class="cmd-row"><span class="cmd-fr">git diff</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">git diff</span></div>
+              <div class="cmd-row"><span class="cmd-fr">git journal</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">git log</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="cmd-group-title">Debug</div>
+            <div class="cmd-list">
+              <div class="cmd-row"><span class="cmd-fr">demarre le debug</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">start debugging</span></div>
+              <div class="cmd-row"><span class="cmd-fr">arrete le debug</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">stop debugging</span></div>
+              <div class="cmd-row"><span class="cmd-fr">palier dessus</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">step over</span></div>
+              <div class="cmd-row"><span class="cmd-fr">palier dessous</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">step into</span></div>
+              <div class="cmd-row"><span class="cmd-fr">palier sortir</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">step out</span></div>
+              <div class="cmd-row"><span class="cmd-fr">continue</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">continue</span></div>
+              <div class="cmd-row"><span class="cmd-fr">ajoute breakpoint</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">toggle breakpoint</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="cmd-group-title">Refactor & Go To</div>
+            <div class="cmd-list">
+              <div class="cmd-row"><span class="cmd-fr">renomme le symbole</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">rename symbol</span></div>
+              <div class="cmd-row"><span class="cmd-fr">correction rapide</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">quick fix</span></div>
+              <div class="cmd-row"><span class="cmd-fr">refactorise</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">refactor</span></div>
+              <div class="cmd-row"><span class="cmd-fr">apercu definition</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">peek definition</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="cmd-group-title">Bookmarks</div>
+            <div class="cmd-list">
+              <div class="cmd-row"><span class="cmd-fr">ajoute signet</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">toggle bookmark</span></div>
+              <div class="cmd-row"><span class="cmd-fr">signet suivant</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">next bookmark</span></div>
+              <div class="cmd-row"><span class="cmd-fr">signet precedent</span><span class="cmd-arrow">&rarr;</span><span class="cmd-en">previous bookmark</span></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
