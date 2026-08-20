@@ -14,6 +14,8 @@ export function createSherpaSTT(options: SherpaSTTOptions): StreamingSTT {
   let stream: any = null;
   let callback: STTResultCallback | null = null;
   let running = false;
+  let audioBuffer: Float32Array = new Float32Array(0);
+  const BUFFER_SIZE = 320;
 
   function findModelFiles(modelDir: string) {
     const files = fs.readdirSync(modelDir);
@@ -76,14 +78,15 @@ export function createSherpaSTT(options: SherpaSTTOptions): StreamingSTT {
           },
           decodingMethod: "greedy_search",
           enableEndpoint: true,
-          rule1MinTrailingSilence: 4.5,
-          rule2MinTrailingSilence: 3.0,
-          rule3MinUtteranceLength: 30,
+          rule1MinTrailingSilence: 6.0,
+          rule2MinTrailingSilence: 4.0,
+          rule3MinUtteranceLength: 60,
         };
 
         recognizer = new sherpa.OnlineRecognizer(config);
         stream = recognizer.createStream();
         callback = resultCallback;
+        audioBuffer = new Float32Array(0);
         running = true;
 
         log("STT initialized and ready");
@@ -97,10 +100,20 @@ export function createSherpaSTT(options: SherpaSTTOptions): StreamingSTT {
       if (!running || !recognizer || !stream || !callback) return;
 
       try {
-        stream.acceptWaveform({ samples, sampleRate });
+        const combined = new Float32Array(audioBuffer.length + samples.length);
+        combined.set(audioBuffer, 0);
+        combined.set(samples, audioBuffer.length);
+        audioBuffer = combined;
 
-        while (recognizer.isReady(stream)) {
-          recognizer.decode(stream);
+        while (audioBuffer.length >= BUFFER_SIZE) {
+          const chunk = audioBuffer.slice(0, BUFFER_SIZE);
+          audioBuffer = audioBuffer.slice(BUFFER_SIZE);
+
+          stream.acceptWaveform({ samples: chunk, sampleRate });
+
+          while (recognizer.isReady(stream)) {
+            recognizer.decode(stream);
+          }
         }
 
         const result = recognizer.getResult(stream);
@@ -132,6 +145,7 @@ export function createSherpaSTT(options: SherpaSTTOptions): StreamingSTT {
       recognizer = null;
       stream = null;
       callback = null;
+      audioBuffer = new Float32Array(0);
       log("STT stopped");
     },
 

@@ -18,6 +18,7 @@ export function createAudioCapture(options: AudioCaptureOptions = {}): AudioCapt
   const targetSampleRate = options.sampleRate ?? 16000;
   let capturing = false;
   let stream: any = null;
+  const resampler = createResampler(48000, targetSampleRate);
 
   return {
     async start(callback: AudioChunkCallback) {
@@ -43,7 +44,7 @@ export function createAudioCapture(options: AudioCaptureOptions = {}): AudioCapt
           },
           (data: Float32Array) => {
             const mono = stereoToMono(data);
-            const resampled = resample(mono, 48000, targetSampleRate);
+            const resampled = resampler.process(mono);
             callback(resampled, targetSampleRate);
           }
         );
@@ -65,6 +66,7 @@ export function createAudioCapture(options: AudioCaptureOptions = {}): AudioCapt
           stream = null;
         }
         capturing = false;
+        resampler.reset();
         log("Audio capture stopped");
       } catch (err) {
         logError("Failed to stop audio capture", err);
@@ -85,27 +87,42 @@ function stereoToMono(stereo: Float32Array): Float32Array {
   return mono;
 }
 
-function resample(
-  samples: Float32Array,
-  fromRate: number,
-  toRate: number
-): Float32Array {
-  if (fromRate === toRate) return samples;
-
+function createResampler(fromRate: number, toRate: number) {
   const ratio = fromRate / toRate;
-  const newLength = Math.round(samples.length / ratio);
-  const result = new Float32Array(newLength);
+  let buffer = new Float32Array(0);
 
-  for (let i = 0; i < newLength; i++) {
-    const srcIndex = i * ratio;
-    const low = Math.floor(srcIndex);
-    const high = low + 1;
-    const frac = srcIndex - low;
-    result[i] =
-      low + 1 < samples.length
-        ? samples[low] * (1 - frac) + samples[high] * frac
-        : samples[low] || 0;
-  }
+  return {
+    process(samples: Float32Array): Float32Array {
+      const combined = new Float32Array(buffer.length + samples.length);
+      combined.set(buffer, 0);
+      combined.set(samples, buffer.length);
 
-  return result;
+      const outputLength = Math.floor(combined.length / ratio);
+      const result = new Float32Array(outputLength);
+      let consumed = 0;
+
+      for (let i = 0; i < outputLength; i++) {
+        const srcIndex = consumed;
+        const low = Math.floor(srcIndex);
+        const high = low + 1;
+        const frac = srcIndex - low;
+
+        if (high < combined.length) {
+          result[i] = combined[low] * (1 - frac) + combined[high] * frac;
+        } else {
+          result[i] = combined[low] || 0;
+        }
+        consumed += ratio;
+      }
+
+      const usedSamples = Math.floor(consumed);
+      buffer = combined.slice(usedSamples);
+
+      return result;
+    },
+
+    reset() {
+      buffer = new Float32Array(0);
+    },
+  };
 }
