@@ -2,10 +2,8 @@ import * as vscode from "vscode";
 import { initLogger, log, logError } from "./utils/logger";
 import { createEngine, Engine } from "./engine";
 import { createStatusBar } from "./ui/status-bar";
-import { createWebviewPanel, WebviewPanel } from "./ui/webview/panel";
 
 let engine: Engine | undefined;
-let webview: WebviewPanel | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
   initLogger();
@@ -14,8 +12,7 @@ export function activate(context: vscode.ExtensionContext) {
   const statusBar = createStatusBar();
   statusBar.show();
 
-  webview = createWebviewPanel(context.extensionUri);
-  engine = createEngine({ statusBar, webview });
+  engine = createEngine({ statusBar });
 
   const toggleCmd = vscode.commands.registerCommand("voicecode.toggle", async () => {
     try {
@@ -43,10 +40,6 @@ export function activate(context: vscode.ExtensionContext) {
     }
   });
 
-  const panelCmd = vscode.commands.registerCommand("voicecode.openPanel", () => {
-    webview?.toggle();
-  });
-
   const helpCmd = vscode.commands.registerCommand("voicecode.showCommands", () => {
     const commands = [
       "Navigation: 'va a la ligne 15', 'go to start', 'monte', 'descend'",
@@ -61,13 +54,12 @@ export function activate(context: vscode.ExtensionContext) {
     );
   });
 
-  context.subscriptions.push(toggleCmd, startCmd, stopCmd, panelCmd, helpCmd, statusBar);
+  context.subscriptions.push(toggleCmd, startCmd, stopCmd, helpCmd, statusBar);
 
   log("VoiceCode activated");
 }
 
 export function deactivate() {
   engine?.dispose();
-  webview?.dispose();
   log("VoiceCode deactivated");
 }

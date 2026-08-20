@@ -34,10 +34,6 @@
         "title": "VoiceCode: Stop Recording"
       },
       {
-        "command": "voicecode.openPanel",
-        "title": "VoiceCode: Open Control Panel"
-      },
-      {
         "command": "voicecode.showCommands",
         "title": "VoiceCode: Show Available Commands"
       }
@@ -46,54 +42,24 @@
       {
         "command": "voicecode.toggle",
         "key": "ctrl+shift+v"
-      },
-      {
-        "command": "voicecode.openPanel",
-        "key": "ctrl+shift+p"
       }
     ],
     "configuration": {
       "title": "VoiceCode",
       "properties": {
-        "voicecode.microphone": {
-          "type": "string",
-          "default": "default",
-          "description": "Microphone device ID or 'default'"
-        },
         "voicecode.language": {
           "type": "string",
-          "default": "auto",
+          "default": "fr",
           "enum": [
-            "auto",
             "en",
             "fr"
           ],
-          "description": "Recognition language (auto, en, fr)"
-        },
-        "voicecode.modelDir": {
-          "type": "string",
-          "default": "",
-          "description": "Path to sherpa-onnx model directory"
-        },
-        "voicecode.vadThreshold": {
-          "type": "number",
-          "default": 0.5,
-          "description": "Voice Activity Detection threshold (0-1)"
-        },
-        "voicecode.silenceTimeout": {
-          "type": "number",
-          "default": 1200,
-          "description": "Silence duration in ms before finalizing utterance"
+          "description": "Recognition language (en, fr)"
         },
         "voicecode.enableNotifications": {
           "type": "boolean",
           "default": true,
           "description": "Show VS Code notifications for executed actions"
-        },
-        "voicecode.enableWebview": {
-          "type": "boolean",
-          "default": true,
-          "description": "Show the VoiceCode control panel"
         }
       }
     }

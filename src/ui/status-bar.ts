@@ -16,18 +16,22 @@ export function createStatusBar(): StatusBar {
   function getStateDisplay(state: AppState, text?: string) {
     switch (state) {
       case AppState.Idle:
-        return { icon: "$(mic)", color: undefined, tooltip: "VoiceCode: Click to start" };
+        return {
+          icon: "$(mic)",
+          color: undefined,
+          tooltip: "VoiceCode: Click to start recording (Ctrl+Shift+V)"
+        };
       case AppState.Recording:
         return {
           icon: "$(record-red)",
           color: new vscode.ThemeColor("statusBarItem.warningBackground"),
-          tooltip: text ? `Listening: ${text}` : "VoiceCode: Listening...",
+          tooltip: text ? `Listening: ${text}` : "VoiceCode: Listening... Click to stop"
         };
       case AppState.Processing:
         return {
           icon: "$(sync~spin)",
           color: new vscode.ThemeColor("statusBarItem.errorBackground"),
-          tooltip: "VoiceCode: Processing...",
+          tooltip: "VoiceCode: Processing command..."
         };
     }
   }
