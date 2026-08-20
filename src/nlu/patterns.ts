@@ -853,6 +853,17 @@ const RULES: PatternRule[] = [
     ],
     intent: Intent.CloseWindow, confidence: 0.94,
   },
+
+  // ── Dictation ──
+  {
+    patterns: [
+      /^dicte$/i,
+      /^mode dictee$/i,
+      /^dictate$/i,
+      /^dictation mode$/i,
+    ],
+    intent: Intent.DictateToggle, confidence: 0.97,
+  },
 ];
 
 export function matchPatterns(text: string): NLUResult | null {

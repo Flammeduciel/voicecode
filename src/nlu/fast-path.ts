@@ -200,6 +200,17 @@ const FUZZY_COMMANDS: FuzzyCandidate[] = [
   { phrase: "lowercase", intent: Intent.Lowercase, confidence: 0.80 },
   { phrase: "trim whitespace", intent: Intent.TrimWhitespace, confidence: 0.78 },
   { phrase: "pin tab", intent: Intent.PinTab, confidence: 0.80 },
+
+  // ── Dictation FR ──
+  { phrase: "dicte", intent: Intent.DictateToggle, confidence: 0.85 },
+  { phrase: "mode dictee", intent: Intent.DictateToggle, confidence: 0.80 },
+  { phrase: "arrete la dictee", intent: Intent.DictateToggle, confidence: 0.80 },
+  { phrase: "arrete dicte", intent: Intent.DictateToggle, confidence: 0.80 },
+
+  // ── Dictation EN ──
+  { phrase: "dictate", intent: Intent.DictateToggle, confidence: 0.85 },
+  { phrase: "dictation mode", intent: Intent.DictateToggle, confidence: 0.80 },
+  { phrase: "stop dictation", intent: Intent.DictateToggle, confidence: 0.80 },
 ];
 
 const MAX_EDIT_DISTANCE = 3;

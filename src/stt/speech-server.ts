@@ -17,6 +17,7 @@ export interface SpeechServer {
   stop(): void;
   setLanguage(lang: string): void;
   sendAction(intent: string, success: boolean): void;
+  sendMode(dictation: boolean): void;
   getPort(): number;
   isOpen(): boolean;
 }
@@ -76,6 +77,25 @@ function getPageHtml(wsPort: number, lang: string): string {
     .status-idle { background: #1a472a; color: #4ade80; }
     .status-error { background: #7f1d1d; color: #fca5a5; }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+
+    .mode-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: #1a1a2e;
+      color: #666;
+      border: 1px solid #333;
+      transition: all 0.2s;
+    }
+    .mode-badge.active {
+      background: #7c3aed;
+      color: #fff;
+      border-color: #7c3aed;
+      animation: pulse 2s ease-in-out infinite;
+    }
 
     .lang-btns {
       display: inline-flex;
@@ -205,6 +225,7 @@ function getPageHtml(wsPort: number, lang: string): string {
         <div class="subtitle">Speak commands in French or English</div>
       </div>
       <div class="header-right">
+        <span id="mode-badge" class="mode-badge">Commands</span>
         <div class="lang-btns">
           <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
           <button class="lang-btn active" id="btn-fr" onclick="setLang('fr')">FR</button>
@@ -469,6 +490,17 @@ function getPageHtml(wsPort: number, lang: string): string {
 
     function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
+    function setMode(dictation) {
+      const badge = document.getElementById('mode-badge');
+      if (dictation) {
+        badge.textContent = 'Dictation';
+        badge.className = 'mode-badge active';
+      } else {
+        badge.textContent = 'Commands';
+        badge.className = 'mode-badge';
+      }
+    }
+
     function addAction(intent, success) {
       const el = document.getElementById('actions');
       const empty = el.querySelector('.action-empty');
@@ -498,6 +530,7 @@ function getPageHtml(wsPort: number, lang: string): string {
           const msg = JSON.parse(event.data);
           if (msg.type === 'language') setLang(msg.lang);
           if (msg.type === 'action') addAction(msg.intent, msg.success);
+          if (msg.type === 'mode') setMode(msg.dictation);
         } catch(e) {}
       };
 
@@ -594,6 +627,12 @@ export function createSpeechServer(): SpeechServer {
     sendAction(intent: string, success: boolean) {
       if (clientSocket && clientSocket.readyState === 1) {
         clientSocket.send(JSON.stringify({ type: "action", intent, success }));
+      }
+    },
+
+    sendMode(dictation: boolean) {
+      if (clientSocket && clientSocket.readyState === 1) {
+        clientSocket.send(JSON.stringify({ type: "mode", dictation }));
       }
     },
 

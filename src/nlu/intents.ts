@@ -158,6 +158,7 @@ export const enum Intent {
   CloseWindow = "close_window",
 
   // Dictation
+  DictateToggle = "dictate_toggle",
   InsertText = "insert_text",
 
   // Unknown

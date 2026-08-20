@@ -40,8 +40,17 @@ export function activate(context: vscode.ExtensionContext) {
     }
   });
 
+  const dictateCmd = vscode.commands.registerCommand("voicecode.dictate", async () => {
+    try {
+      engine?.toggleDictation();
+    } catch (err) {
+      logError("Dictate toggle failed", err);
+    }
+  });
+
   const helpCmd = vscode.commands.registerCommand("voicecode.showCommands", () => {
     const commands = [
+      "Dictation: 'dicte' (enter), 'arrete la dictee' (exit)",
       "Navigation: 'va a la ligne 15', 'debut', 'fin', 'monte', 'descend', 'gauche', 'droite'",
       "Scroll: 'defile haut', 'page bas'",
       "Editing: 'annule', 'refais', 'copie', 'colle', 'coupe', 'supprime la ligne', 'duplique la ligne'",
@@ -64,7 +73,7 @@ export function activate(context: vscode.ExtensionContext) {
     );
   });
 
-  context.subscriptions.push(toggleCmd, startCmd, stopCmd, helpCmd, statusBar);
+  context.subscriptions.push(toggleCmd, startCmd, stopCmd, dictateCmd, helpCmd, statusBar);
 
   log("VoiceCode activated");
 }

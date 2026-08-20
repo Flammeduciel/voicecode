@@ -36,6 +36,10 @@
       {
         "command": "voicecode.showCommands",
         "title": "VoiceCode: Show Available Commands"
+      },
+      {
+        "command": "voicecode.dictate",
+        "title": "VoiceCode: Toggle Dictation Mode"
       }
     ],
     "keybindings": [

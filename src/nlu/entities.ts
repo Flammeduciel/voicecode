@@ -88,3 +88,37 @@ export function detectDictation(text: string): NLUResult | null {
 
   return null;
 }
+
+const OPEN_PUNCT = new Set(["(", "{", "["]);
+const CLOSE_PUNCT = new Set([")", "}", "]"]);
+
+export function processDictationText(text: string): string {
+  const words = text.split(/\s+/);
+  const result: string[] = [];
+
+  for (const word of words) {
+    const lower = word.toLowerCase().trim();
+    const punct = PUNCTUATION_MAP[lower];
+
+    if (punct !== undefined) {
+      if (result.length > 0 && !OPEN_PUNCT.has(punct)) {
+        result.push(punct);
+      } else {
+        result.push(punct);
+      }
+    } else {
+      result.push(word);
+    }
+  }
+
+  let out = result.join(" ");
+
+  for (const p of OPEN_PUNCT) {
+    out = out.replace(new RegExp(`\\s+\\${p}`, "g"), p);
+  }
+  for (const p of CLOSE_PUNCT) {
+    out = out.replace(new RegExp(`\\${p}\\s+`, "g"), p);
+  }
+
+  return out;
+}

@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { AppState } from "../state-machine";
 
 export interface StatusBar {
-  update(state: AppState, text?: string): void;
+  update(state: AppState, dictation?: boolean): void;
   show(): void;
   hide(): void;
   dispose(): void;
@@ -13,7 +13,7 @@ export function createStatusBar(): StatusBar {
   item.command = "voicecode.toggle";
   item.tooltip = "VoiceCode: Click to toggle recording";
 
-  function getStateDisplay(state: AppState, text?: string) {
+  function getStateDisplay(state: AppState, dictation?: boolean) {
     switch (state) {
       case AppState.Idle:
         return {
@@ -22,10 +22,17 @@ export function createStatusBar(): StatusBar {
           tooltip: "VoiceCode: Click to start recording (Ctrl+Shift+V)"
         };
       case AppState.Recording:
+        if (dictation) {
+          return {
+            icon: "$(edit)",
+            color: new vscode.ThemeColor("statusBarItem.warningBackground"),
+            tooltip: "VoiceCode: Dictation mode active - Say 'arrête' to exit"
+          };
+        }
         return {
           icon: "$(record-red)",
           color: new vscode.ThemeColor("statusBarItem.warningBackground"),
-          tooltip: text ? `Listening: ${text}` : "VoiceCode: Listening... Click to stop"
+          tooltip: "VoiceCode: Listening... Click to stop"
         };
       case AppState.Processing:
         return {
@@ -37,8 +44,8 @@ export function createStatusBar(): StatusBar {
   }
 
   return {
-    update(state: AppState, text?: string) {
-      const display = getStateDisplay(state, text);
+    update(state: AppState, dictation?: boolean) {
+      const display = getStateDisplay(state, dictation);
       item.text = ` ${display.icon} VoiceCode `;
       item.color = display.color;
       item.backgroundColor = display.color;
