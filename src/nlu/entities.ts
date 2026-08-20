@@ -89,36 +89,71 @@ export function detectDictation(text: string): NLUResult | null {
   return null;
 }
 
-const OPEN_PUNCT = new Set(["(", "{", "["]);
-const CLOSE_PUNCT = new Set([")", "}", "]"]);
+const ACCENT_MAP: Record<string, string> = {
+  à: "a", â: "a", ä: "a",
+  é: "e", è: "e", ê: "e", ë: "e",
+  î: "i", ï: "i",
+  ô: "o", ö: "o",
+  ù: "u", û: "u", ü: "u",
+  ÿ: "y",
+  ç: "c",
+  æ: "ae", œ: "oe",
+};
+
+function stripAccents(s: string): string {
+  return s.replace(/[àâäéèêëïîôùûüÿçœæ]/gi, (ch) => ACCENT_MAP[ch] ?? ch);
+}
+
+const SORTED_PHRASE_KEYS = Object.keys(PUNCTUATION_MAP).sort((a, b) => b.length - a.length);
+
+const M = "\x01";
+const NL = "\x02";
+const TB = "\x03";
 
 export function processDictationText(text: string): string {
-  const words = text.split(/\s+/);
-  const result: string[] = [];
+  const normalized = stripAccents(text.toLowerCase().trim());
 
-  for (const word of words) {
-    const lower = word.toLowerCase().trim();
-    const punct = PUNCTUATION_MAP[lower];
+  let out = normalized;
 
-    if (punct !== undefined) {
-      if (result.length > 0 && !OPEN_PUNCT.has(punct)) {
-        result.push(punct);
-      } else {
-        result.push(punct);
-      }
-    } else {
-      result.push(word);
+  for (const phrase of SORTED_PHRASE_KEYS) {
+    if (phrase.includes(" ")) {
+      const punct = PUNCTUATION_MAP[phrase];
+      const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const marker = punct === "\n" ? NL : punct === "\t" ? TB : `${M}${punct}${M}`;
+      out = out.replace(new RegExp(escaped, "gi"), marker);
     }
   }
 
-  let out = result.join(" ");
+  const words = out.split(/\s+/);
+  const result: string[] = [];
 
-  for (const p of OPEN_PUNCT) {
-    out = out.replace(new RegExp(`\\s+\\${p}`, "g"), p);
+  for (const word of words) {
+    if (word === NL || word === TB || (word.startsWith(M) && word.endsWith(M))) {
+      result.push(word);
+    } else {
+      const punct = PUNCTUATION_MAP[word];
+      if (punct !== undefined) {
+        const marker = punct === "\n" ? NL : punct === "\t" ? TB : `${M}${punct}${M}`;
+        result.push(marker);
+      } else {
+        result.push(word);
+      }
+    }
   }
-  for (const p of CLOSE_PUNCT) {
-    out = out.replace(new RegExp(`\\${p}\\s+`, "g"), p);
-  }
+
+  out = result.join(" ");
+
+  out = out.replace(new RegExp(`\\s*${NL}\\s*`, "g"), NL);
+  out = out.replace(new RegExp(`\\s*${TB}\\s*`, "g"), TB);
+  out = out.replace(new RegExp(`\\s*${M}([^${M}]+)${M}`, "g"), "$1");
+
+  out = out.replace(/ {2,}/g, " ").trim();
+
+  out = out.split(NL).join("\n");
+  out = out.split(TB).join("\t");
+
+  out = out.replace(/([(\[{])\s+/g, "$1");
+  out = out.replace(/\s+([)\]}])/g, "$1");
 
   return out;
 }
