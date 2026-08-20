@@ -23,7 +23,7 @@ const MODEL_DIRS: Record<STTLanguage, string> = {
 
 export function createSTTManager(): STTManager {
   let stt: StreamingSTT | null = null;
-  let currentLang: STTLanguage = "en";
+  let currentLang: STTLanguage = "fr";
   let onResultCallback: ((result: STTResult) => void) | null = null;
 
   function getModelDir(lang: STTLanguage): string {

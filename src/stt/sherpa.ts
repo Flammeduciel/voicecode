@@ -17,9 +17,16 @@ export function createSherpaSTT(options: SherpaSTTOptions): StreamingSTT {
 
   function findModelFiles(modelDir: string) {
     const files = fs.readdirSync(modelDir);
-    const encoder = files.find((f) => f.includes("encoder") && f.endsWith(".onnx"));
-    const decoder = files.find((f) => f.includes("decoder") && f.endsWith(".onnx"));
-    const joiner = files.find((f) => f.includes("joiner") && f.endsWith(".onnx"));
+
+    const encoder =
+      files.find((f) => f.includes("encoder") && f.endsWith(".onnx") && !f.includes("int8")) ||
+      files.find((f) => f.includes("encoder") && f.endsWith(".onnx"));
+    const decoder =
+      files.find((f) => f.includes("decoder") && f.endsWith(".onnx") && !f.includes("int8")) ||
+      files.find((f) => f.includes("decoder") && f.endsWith(".onnx"));
+    const joiner =
+      files.find((f) => f.includes("joiner") && f.endsWith(".onnx") && !f.includes("int8")) ||
+      files.find((f) => f.includes("joiner") && f.endsWith(".onnx"));
     const tokens = files.find((f) => f === "tokens.txt");
 
     if (!encoder || !decoder || !joiner || !tokens) {
@@ -69,9 +76,9 @@ export function createSherpaSTT(options: SherpaSTTOptions): StreamingSTT {
           },
           decodingMethod: "greedy_search",
           enableEndpoint: true,
-          rule1MinTrailingSilence: 2.4,
-          rule2MinTrailingSilence: (options.silenceTimeout ?? 1200) / 1000,
-          rule3MinUtteranceLength: 20,
+          rule1MinTrailingSilence: 4.5,
+          rule2MinTrailingSilence: 3.0,
+          rule3MinUtteranceLength: 30,
         };
 
         recognizer = new sherpa.OnlineRecognizer(config);

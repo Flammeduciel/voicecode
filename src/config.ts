@@ -14,10 +14,10 @@ export function getConfig(): VoiceConfig {
   const cfg = vscode.workspace.getConfiguration("voicecode");
   return {
     microphone: cfg.get("microphone", "default"),
-    language: cfg.get("language", "auto"),
+    language: cfg.get("language", "fr"),
     modelDir: cfg.get("modelDir", ""),
     vadThreshold: cfg.get("vadThreshold", 0.5),
-    silenceTimeout: cfg.get("silenceTimeout", 1200),
+    silenceTimeout: cfg.get("silenceTimeout", 2000),
     enableNotifications: cfg.get("enableNotifications", true),
     enableWebview: cfg.get("enableWebview", true),
   };

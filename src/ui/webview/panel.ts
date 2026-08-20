@@ -151,6 +151,7 @@ export function createWebviewPanel(extensionUri: vscode.Uri): WebviewPanel {
     const actions = document.getElementById('actions');
     const status = document.getElementById('status');
     let hasContent = false;
+    const vscode = acquireVsCodeApi();
 
     function switchLang(lang) {
       document.getElementById('lang-en').className = 'lang-btn' + (lang === 'en' ? ' active' : '');
